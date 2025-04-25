@@ -33,46 +33,47 @@ Assim, o projeto alia teoria, prática e propósito institucional, promovendo im
 ### 2.1. Personas (Semana 01)
 
 <div align="center">
-<sub>Figura 01 - Persona 01</sub>
+<sub>Figura 01 - Persona 01
 <br>
 <br>
-<img src="../assets/personas/persona_01.png" width="100%">
-<br>
-<sup>Fonte: Material produzido pelo autor (2025)</sup>
-<br>
-<br>
+  
+![Figura 01 - Persona 01](./assets/personas/persona_01.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
 </div>
+<br>
 
 ### 2.2. User Stories (Semana 01)
 
-&nbsp;&nbsp;&nbsp;&nbsp;US01 | Como estudante do INTELI, quero visualizar em tempo real a disponibilidade das salas, para que eu possa escolher um horário conveniente sem risco de conflito com outras reservas.
+&nbsp;&nbsp;&nbsp;&nbsp;**US01 |** Como estudante do INTELI, quero visualizar em tempo real a disponibilidade das salas, para que eu possa escolher um horário conveniente sem risco de conflito com outras reservas.
 
-&nbsp;&nbsp;&nbsp;&nbsp;US02 | Como usuário do sistema, quero realizar reservas filtrando por data, horário, capacidade da sala e recursos disponíveis, para que eu encontre um ambiente adequado às necessidades da minha reunião ou estudo em grupo.
+&nbsp;&nbsp;&nbsp;&nbsp;**US02 |** Como usuário do sistema, quero realizar reservas filtrando por data, horário, capacidade da sala e recursos disponíveis, para que eu encontre um ambiente adequado às necessidades da minha reunião ou estudo em grupo.
 
-&nbsp;&nbsp;&nbsp;&nbsp;US03 | Como estudante, quero acessar uma área pessoal com minhas reservas futuras e passadas, para que eu possa acompanhar, modificar ou cancelar agendamentos conforme minhas demandas mudam.
+&nbsp;&nbsp;&nbsp;&nbsp;**US03 |** Como estudante, quero acessar uma área pessoal com minhas reservas futuras e passadas, para que eu possa acompanhar, modificar ou cancelar agendamentos conforme minhas demandas mudam.
 
 <br>
 
 **Análise INVEST – User Story US02:**
 
-&nbsp;&nbsp;&nbsp;&nbsp;US02 | Como usuário do sistema, quero realizar reservas filtrando por data, horário, capacidade da sala e recursos disponíveis, para que eu encontre um ambiente adequado às necessidades da minha reunião ou estudo em grupo.
+&nbsp;&nbsp;&nbsp;&nbsp;**US02 |** Como usuário do sistema, quero realizar reservas filtrando por data, horário, capacidade da sala e recursos disponíveis, para que eu encontre um ambiente adequado às necessidades da minha reunião ou estudo em grupo.
 
 
-&nbsp;&nbsp;&nbsp;&nbsp;I – Independente:
+&nbsp;&nbsp;&nbsp;&nbsp;**I – Independente:**
 Essa User Story pode ser implementada de forma isolada, sem depender diretamente da criação da área pessoal ou visualização de histórico. O filtro e a reserva são funcionalidades autônomas que não exigem que outras partes estejam completamente prontas para funcionar.
 
-&nbsp;&nbsp;&nbsp;&nbsp;N – Negociável:
+&nbsp;&nbsp;&nbsp;&nbsp;**N – Negociável:**
 O escopo da filtragem pode ser discutido com os stakeholders. É possível negociar, por exemplo, quais filtros serão priorizados (capacidade, data, recursos, hora) ou se todos precisam estar disponíveis logo na entrega final.
 
-&nbsp;&nbsp;&nbsp;&nbsp;V – Valiosa:
+&nbsp;&nbsp;&nbsp;&nbsp;**V – Valiosa:**
 Essa funcionalidade agrega valor direto ao usuário, pois garante que ele possa reservar um espaço adequado às suas necessidades. Isso evita frustrações com salas inadequadas e melhora a experiência geral do sistema.
-E – Estimável:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**E – Estimável:**
 É possível estimar com clareza o esforço necessário para desenvolver essa funcionalidade. A complexidade pode ser dividida entre a criação do frontend dos filtros, a lógica no backend e a estrutura de dados necessária no banco.
 
-&nbsp;&nbsp;&nbsp;&nbsp;S – Pequena (Small):
+&nbsp;&nbsp;&nbsp;&nbsp;**S – Pequena (Small):**
 A User Story é suficientemente pequena para ser entregue em um único ciclo de desenvolvimento. Caso necessário, pode até ser decomposta (ex: primeiro implementar filtro por data e horário, depois adicionar por capacidade e recursos).
 
-&nbsp;&nbsp;&nbsp;&nbsp;T – Testável:
+&nbsp;&nbsp;&nbsp;&nbsp;**T – Testável:**
 É possível validar se a funcionalidade está funcionando corretamente através de testes simples: selecionar filtros específicos e verificar se as salas exibidas condizem com os critérios escolhidos.
 
 ---

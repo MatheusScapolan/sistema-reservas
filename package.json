@@ -1,0 +1,27 @@
+{
+  "name": "sistema-reservas",
+  "version": "1.0.0",
+  "main": "jest.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MatheusScapolan/sistema-reservas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MatheusScapolan/sistema-reservas/issues"
+  },
+  "homepage": "https://github.com/MatheusScapolan/sistema-reservas#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

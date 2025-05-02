@@ -16,7 +16,7 @@
 
 <br>
 
-## <a name="c1"></a>1. Introdução (Semana 01)
+## <a name="c1"></a>1. Introdução:
 
 &nbsp;&nbsp;&nbsp;&nbsp;No contexto inovador do INTELI – Instituto de Tecnologia e Liderança –, onde os projetos acadêmicos refletem diretamente os desafios e demandas do mundo real, este projeto individual propõe o desenvolvimento de um sistema web voltado à reserva de salas para agendamentos. A proposta busca atender, de forma direta, uma necessidade recorrente vivida por alunos da instituição: o uso eficiente, organizado e transparente dos espaços compartilhados no campus.
 
@@ -30,7 +30,7 @@ Assim, o projeto alia teoria, prática e propósito institucional, promovendo im
 
 ## <a name="c2"></a>2. Visão Geral da Aplicação Web
 
-### 2.1. Personas (Semana 01)
+### 2.1. Personas:
 
 <div align="center">
 <sub>Figura 01 - Persona 01
@@ -43,7 +43,7 @@ Assim, o projeto alia teoria, prática e propósito institucional, promovendo im
 </div>
 <br>
 
-### 2.2. User Stories (Semana 01)
+### 2.2. User Stories:
 
 &nbsp;&nbsp;&nbsp;&nbsp;**US01 |** Como estudante do INTELI, quero visualizar em tempo real a disponibilidade das salas, para que eu possa escolher um horário conveniente sem risco de conflito com outras reservas.
 
@@ -80,11 +80,104 @@ A User Story é suficientemente pequena para ser entregue em um único ciclo de 
 
 ## <a name="c3"></a>3. Projeto da Aplicação Web
 
-### 3.1. Modelagem do banco de dados  (Semana 3)
+### 3.1. Modelagem do banco de dados:
 
-*Posicione aqui os diagramas de modelos relacionais do seu banco de dados, apresentando todos os esquemas de tabelas e suas relações. Utilize texto para complementar suas explicações, se necessário.*
+&nbsp;&nbsp;&nbsp;&nbsp;O sistema de reservas foi modelado considerando os principais atores (usuários) e as funcionalidades centrais (reserva de salas com recursos). A modelagem contempla 5 entidades principais:
 
-*Posicione também o modelo físico com o Schema do BD (arquivo .sql)*
+- Users (Usuários que interagem com o sistema);
+
+- Rooms (Salas disponíveis para reserva);
+
+- Bookings (Reservas realizadas);
+
+- Room_Resources (Recursos adicionais presentes nas salas);
+
+- BookingHistory (Histórico de alterações das reservas - opcional para escalabilidade).
+
+**Modelo Lógico (Relacional):**
+
+&nbsp;&nbsp;&nbsp;&nbsp;As relações entre as entidades estão representadas da seguinte forma:
+
+``` text
+[Users] -----< [Bookings] >----- [Rooms] -----< [Room_Resources]
+                       |
+               [BookingHistory]
+
+```
+
+- Um usuário pode fazer várias reservas;
+
+- Uma sala pode ter várias reservas e múltiplos recursos;
+
+- Cada reserva pode ter alterações registradas no histórico.
+
+**Modelo Físico (DDL - Script SQL):**
+
+&nbsp;&nbsp;&nbsp;&nbsp;Abaixo está o schema completo do banco de dados, pronto para ser executado no Supabase ou em qualquer banco PostgreSQL:
+
+``` sql
+-- 1. Tabela de Usuários
+CREATE TABLE Users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password TEXT NOT NULL, -- Armazenar preferencialmente como hash
+    role VARCHAR(20) DEFAULT 'student',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Tabela de Salas
+CREATE TABLE Rooms (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50),
+    capacity INTEGER,
+    has_projector BOOLEAN DEFAULT false,
+    has_whiteboard BOOLEAN DEFAULT false,
+    location VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Tabela de Reservas
+CREATE TABLE Bookings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    room_id INTEGER REFERENCES Rooms(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status VARCHAR(20) DEFAULT 'ativa',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Tabela de Recursos Complementares das Salas
+CREATE TABLE Room_Resources (
+    id SERIAL PRIMARY KEY,
+    room_id INTEGER REFERENCES Rooms(id) ON DELETE CASCADE,
+    resource_name VARCHAR(100) NOT NULL
+);
+
+-- 5. Tabela de Histórico de Reservas (opcional e escalável)
+CREATE TABLE BookingHistory (
+    id SERIAL PRIMARY KEY,
+    booking_id INTEGER REFERENCES Bookings(id) ON DELETE CASCADE,
+    changed_by_user_id INTEGER REFERENCES Users(id) ON DELETE SET NULL,
+    change_type VARCHAR(50),
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Diagrama Relacional (ERD):**
+
+<div align="center">
+<sub>Figura 02 - Diagrama Relacional
+<br>
+<br>
+  
+![Figura 02 - Modelo Relacional - Banco de Dados](./assets/diagrama_relacional/modelo-banco.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
 
 ### 3.1.1 BD e Models (Semana 5)
 *Descreva aqui os Models implementados no sistema web*

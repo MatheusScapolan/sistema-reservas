@@ -92,7 +92,7 @@ A User Story é suficientemente pequena para ser entregue em um único ciclo de 
 
 - Room_Resources (Recursos adicionais presentes nas salas);
 
-- BookingHistory (Histórico de alterações das reservas - opcional para escalabilidade).
+- BookingHistory (Histórico de alterações das reservas).
 
 **Modelo Lógico (Relacional):**
 
@@ -156,7 +156,7 @@ CREATE TABLE Room_Resources (
     resource_name VARCHAR(100) NOT NULL
 );
 
--- 5. Tabela de Histórico de Reservas (opcional e escalável)
+-- 5. Tabela de Histórico de Reservas
 CREATE TABLE BookingHistory (
     id SERIAL PRIMARY KEY,
     booking_id INTEGER REFERENCES Bookings(id) ON DELETE CASCADE,
@@ -193,9 +193,81 @@ CREATE TABLE BookingHistory (
   
 *Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
 
+<br>
+
 ### 3.3. Wireframes (Semana 03)
 
-*Posicione aqui as imagens do wireframe construído para sua solução e, opcionalmente, o link para acesso (mantenha o link sempre público para visualização).*
+&nbsp;&nbsp;&nbsp;&nbsp;Os wireframes a seguir representam a estrutura e o fluxo das principais telas do Sistema de Reserva de Salas, projetadas para atender às funcionalidades descritas nas User Stories (US) do projeto. Eles focam na disposição dos elementos, navegação e funcionalidades centrais, utilizando um estilo visual de baixa/média fidelidade, sem detalhamento de design final, conforme exemplos de referência.
+
+<br>
+
+**Relação dos Wireframes com as User Stories:**
+
+*   **US01 (Visualizar disponibilidade):** Atendida principalmente pela "Tela Principal / Dashboard" e pela "Tela de Busca Avançada e Listagem de Salas".
+
+
+*   **US02 (Realizar reservas com filtros):** Atendida pela "Tela de Busca Avançada e Listagem de Salas" e pela "Tela de Detalhes da Sala e Confirmação de Reserva".
+
+
+*   **US03 (Acessar e gerenciar reservas pessoais):** Atendida pela "Tela de Minhas Reservas", "Tela de Modificação de Reserva" e pelo "Modal de Confirmação de Ação" para cancelamentos.
+
+<br>
+
+**Wireframes das Telas Principais:**
+
+**1. Tela Principal / Dashboard**
+
+*   **Descrição:** Apresenta uma visão geral da disponibilidade das salas (através de um calendário ou lista) e acesso rápido às principais funcionalidades como nova reserva e gerenciamento de reservas existentes. Atende principalmente à US01.
+*   **Imagem:**
+    ![Wireframe Tela Principal](./assets/wireframes/visual_wireframe_tela_principal.png)
+    *Fonte: Material produzido pelo autor (2025)*
+
+<br>
+
+**2. Tela de Busca Avançada e Listagem de Salas**
+
+*   **Descrição:** Permite ao usuário filtrar salas por data, horário, capacidade e recursos, exibindo uma lista das salas disponíveis que correspondem aos critérios. Atende à US01 e US02.
+*   **Imagem:**
+    ![Wireframe Busca Avançada](./assets/wireframes/visual_wireframe_busca_avancada.png)
+    *Fonte: Material produzido pelo autor (2025)*
+
+<br>
+
+**3. Tela de Detalhes da Sala e Confirmação de Reserva**
+
+*   **Descrição:** Exibe informações detalhadas de uma sala específica e permite ao usuário confirmar uma reserva para um horário selecionado. Atende à US02.
+*   **Imagem:**
+    ![Wireframe Detalhes da Sala e Reserva](./assets/wireframes/visual_wireframe_detalhes_reserva.png)
+    *Fonte: Material produzido pelo autor (2025)*
+
+<br>
+
+**4. Tela de Minhas Reservas**
+
+*   **Descrição:** Permite ao usuário visualizar suas reservas futuras e seu histórico de reservas, além de iniciar ações como modificar ou cancelar agendamentos. Atende à US03.
+*   **Imagem:**
+    ![Wireframe Minhas Reservas](./assets/wireframes/visual_wireframe_minhas_reservas.png)
+    *Fonte: Material produzido pelo autor (2025)*
+
+<br>
+
+**5. Tela de Modificação de Reserva**
+
+*   **Descrição:** Permite ao usuário alterar os detalhes de uma reserva futura existente, como data e horário, verificando a nova disponibilidade. Atende à US03.
+*   **Imagem:**
+    ![Wireframe Modificar Reserva](./assets/wireframes/visual_wireframe_modificar_reserva.png)
+    *Fonte: Material produzido pelo autor (2025)*
+
+<br>
+
+**6. Modal de Confirmação de Ação**
+
+*   **Descrição:** Um modal genérico para confirmar ações críticas, como o cancelamento de uma reserva. Relevante para a US03.
+*   **Imagem:**
+    ![Wireframe Modal de Confirmação](./assets/wireframes/visual_wireframe_confirmacao_modal.png)
+    *Fonte: Material produzido pelo autor (2025)*
+
+<br>
 
 ### 3.4. Guia de estilos (Semana 05)
 

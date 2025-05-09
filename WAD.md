@@ -92,7 +92,11 @@ O modelo contempla quatro entidades principais:
 
 - Bookings (Reservas realizadas com data, horário, motivo e status da reserva);
 
+<<<<<<< HEAD
 - Booking_History (Histórico de alterações em reservas, incluindo o usuário que modificou, ação e data).
+=======
+- BookingHistory (Histórico de alterações das reservas).
+>>>>>>> main
 
 **Modelo Lógico (Relacional):**
 
@@ -177,6 +181,7 @@ CREATE TABLE IF NOT EXISTS booking_history (
     CONSTRAINT fk_modificador FOREIGN KEY (usuario_modificador_id) REFERENCES users(id)
 );
 
+<<<<<<< HEAD
 -- 5. ÍNDICES (Para Desempenho)
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_room_id ON bookings(room_id);
@@ -203,6 +208,16 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER trg_bookings_updated_at
 BEFORE UPDATE ON bookings
 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+=======
+-- 5. Tabela de Histórico de Reservas
+CREATE TABLE BookingHistory (
+    id SERIAL PRIMARY KEY,
+    booking_id INTEGER REFERENCES Bookings(id) ON DELETE CASCADE,
+    changed_by_user_id INTEGER REFERENCES Users(id) ON DELETE SET NULL,
+    change_type VARCHAR(50),
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+>>>>>>> main
 ```
 
 **Diagrama Relacional (ERD):**
@@ -231,6 +246,24 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 - **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
   
 *Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
+
+<br>
+
+### 3.1.1 BD e Models (Semana 5)
+*Descreva aqui os Models implementados no sistema web*
+
+### 3.2. Arquitetura (Semana 5)
+
+*Posicione aqui o diagrama de arquitetura da sua solução de aplicação web. Atualize sempre que necessário.*
+
+**Instruções para criação do diagrama de arquitetura**  
+- **Model**: A camada que lida com a lógica de negócios e interage com o banco de dados.
+- **View**: A camada responsável pela interface de usuário.
+- **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
+  
+*Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
+
+<br>
 
 ### 3.3. Wireframes (Semana 03)
 

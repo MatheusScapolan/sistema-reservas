@@ -82,7 +82,7 @@ A User Story é suficientemente pequena para ser entregue em um único ciclo de 
 
 ### 3.1. Modelagem do banco de dados:
 
-&nbsp;&nbsp;&nbsp;&nbsp; O sistema de reservas de salas foi modelado para atender às necessidades operacionais e acadêmicas da comunidade do INTELI. A modelagem considera três atores principais: os usuários (que realizam reservas), as salas (disponíveis com recursos variados) e o histórico de alterações (para rastreabilidade). O foco do projeto é garantir integridade, rastreabilidade e evitar conflitos de horário entre as reservas.
+&nbsp;&nbsp;&nbsp;&nbsp;O sistema de reservas de salas foi modelado para atender às necessidades operacionais e acadêmicas da comunidade do INTELI. A modelagem considera três atores principais: os usuários (que realizam reservas), as salas (disponíveis com recursos variados) e o histórico de alterações (para rastreabilidade). O foco do projeto é garantir integridade, rastreabilidade e evitar conflitos de horário entre as reservas.
 
 O modelo contempla quatro entidades principais:
 
@@ -92,11 +92,7 @@ O modelo contempla quatro entidades principais:
 
 - Bookings (Reservas realizadas com data, horário, motivo e status da reserva);
 
-<<<<<<< HEAD
 - Booking_History (Histórico de alterações em reservas, incluindo o usuário que modificou, ação e data).
-=======
-- BookingHistory (Histórico de alterações das reservas).
->>>>>>> main
 
 **Modelo Lógico (Relacional):**
 
@@ -108,7 +104,6 @@ O modelo contempla quatro entidades principais:
        \            v
         --> [Booking_History]
 ```
-
 
 - Um usuário pode fazer várias reservas;
 
@@ -181,7 +176,6 @@ CREATE TABLE IF NOT EXISTS booking_history (
     CONSTRAINT fk_modificador FOREIGN KEY (usuario_modificador_id) REFERENCES users(id)
 );
 
-<<<<<<< HEAD
 -- 5. ÍNDICES (Para Desempenho)
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_room_id ON bookings(room_id);
@@ -208,16 +202,6 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER trg_bookings_updated_at
 BEFORE UPDATE ON bookings
 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-=======
--- 5. Tabela de Histórico de Reservas
-CREATE TABLE BookingHistory (
-    id SERIAL PRIMARY KEY,
-    booking_id INTEGER REFERENCES Bookings(id) ON DELETE CASCADE,
-    changed_by_user_id INTEGER REFERENCES Users(id) ON DELETE SET NULL,
-    change_type VARCHAR(50),
-    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
->>>>>>> main
 ```
 
 **Diagrama Relacional (ERD):**

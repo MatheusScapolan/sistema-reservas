@@ -92,7 +92,7 @@ A User Story é suficientemente pequena para ser entregue em um único ciclo de 
 
 - Room_Resources (Recursos adicionais presentes nas salas);
 
-- BookingHistory (Histórico de alterações das reservas - opcional para escalabilidade).
+- BookingHistory (Histórico de alterações das reservas).
 
 **Modelo Lógico (Relacional):**
 
@@ -156,7 +156,7 @@ CREATE TABLE Room_Resources (
     resource_name VARCHAR(100) NOT NULL
 );
 
--- 5. Tabela de Histórico de Reservas (opcional e escalável)
+-- 5. Tabela de Histórico de Reservas
 CREATE TABLE BookingHistory (
     id SERIAL PRIMARY KEY,
     booking_id INTEGER REFERENCES Bookings(id) ON DELETE CASCADE,
@@ -192,6 +192,24 @@ CREATE TABLE BookingHistory (
 - **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
   
 *Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
+
+<br>
+
+### 3.1.1 BD e Models (Semana 5)
+*Descreva aqui os Models implementados no sistema web*
+
+### 3.2. Arquitetura (Semana 5)
+
+*Posicione aqui o diagrama de arquitetura da sua solução de aplicação web. Atualize sempre que necessário.*
+
+**Instruções para criação do diagrama de arquitetura**  
+- **Model**: A camada que lida com a lógica de negócios e interage com o banco de dados.
+- **View**: A camada responsável pela interface de usuário.
+- **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
+  
+*Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
+
+<br>
 
 ### 3.3. Wireframes (Semana 03)
 

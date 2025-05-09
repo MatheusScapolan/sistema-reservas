@@ -82,80 +82,133 @@ A User Story é suficientemente pequena para ser entregue em um único ciclo de 
 
 ### 3.1. Modelagem do banco de dados:
 
-&nbsp;&nbsp;&nbsp;&nbsp;O sistema de reservas foi modelado considerando os principais atores (usuários) e as funcionalidades centrais (reserva de salas com recursos). A modelagem contempla 5 entidades principais:
+&nbsp;&nbsp;&nbsp;&nbsp; O sistema de reservas de salas foi modelado para atender às necessidades operacionais e acadêmicas da comunidade do INTELI. A modelagem considera três atores principais: os usuários (que realizam reservas), as salas (disponíveis com recursos variados) e o histórico de alterações (para rastreabilidade). O foco do projeto é garantir integridade, rastreabilidade e evitar conflitos de horário entre as reservas.
 
-- Users (Usuários que interagem com o sistema);
+O modelo contempla quatro entidades principais:
 
-- Rooms (Salas disponíveis para reserva);
+- Users (Usuários que realizam e alteram reservas);
 
-- Bookings (Reservas realizadas);
+- Rooms (Salas disponíveis para uso, com descrição e recursos embutidos por atributos booleanos);
 
-- Room_Resources (Recursos adicionais presentes nas salas);
+- Bookings (Reservas realizadas com data, horário, motivo e status da reserva);
 
+<<<<<<< HEAD
+- Booking_History (Histórico de alterações em reservas, incluindo o usuário que modificou, ação e data).
+=======
 - BookingHistory (Histórico de alterações das reservas).
+>>>>>>> main
 
 **Modelo Lógico (Relacional):**
 
 &nbsp;&nbsp;&nbsp;&nbsp;As relações entre as entidades estão representadas da seguinte forma:
 
 ``` text
-[Users] -----< [Bookings] >----- [Rooms] -----< [Room_Resources]
-                       |
-               [BookingHistory]
-
+[Users] -----< [Bookings] >----- [Rooms]
+      \             |
+       \            v
+        --> [Booking_History]
 ```
+
 
 - Um usuário pode fazer várias reservas;
 
-- Uma sala pode ter várias reservas e múltiplos recursos;
+- Uma sala pode ser reservada por vários usuários, em diferentes datas e horários;
 
-- Cada reserva pode ter alterações registradas no histórico.
+- Cada reserva pode registrar alterações realizadas por outros usuários (ex: administradores ou responsáveis), garantindo rastreabilidade no histórico;
+
+- Os atributos booleanos das salas substituem a necessidade de uma tabela separada de recursos, simplificando a modelagem.
+
+&nbsp;&nbsp;&nbsp;&nbsp;A integridade referencial é garantida com o uso de chaves estrangeiras (FK) conectando usuários, salas e reservas. Além disso, foram criadas constraints de exclusividade e verificação para evitar reservas simultâneas e horários inválidos, além de triggers para atualização automática de timestamps.
 
 **Modelo Físico (DDL - Script SQL):**
 
-&nbsp;&nbsp;&nbsp;&nbsp;Abaixo está o schema completo do banco de dados, pronto para ser executado no Supabase ou em qualquer banco PostgreSQL:
+&nbsp;&nbsp;&nbsp;&nbsp;Abaixo está o esquema completo do banco de dados, pronto para ser executado no Supabase ou em qualquer banco PostgreSQL:
 
 ``` sql
--- 1. Tabela de Usuários
-CREATE TABLE Users (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100),
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password TEXT NOT NULL, -- Armazenar preferencialmente como hash
-    role VARCHAR(20) DEFAULT 'student',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- 1. TABELA: users
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY, -- PK
+    nome_completo VARCHAR(255) NOT NULL,
+    email_institucional VARCHAR(255) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Tabela de Salas
-CREATE TABLE Rooms (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50),
-    capacity INTEGER,
-    has_projector BOOLEAN DEFAULT false,
-    has_whiteboard BOOLEAN DEFAULT false,
-    location VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- 2. TABELA: rooms
+CREATE TABLE IF NOT EXISTS rooms (
+    id SERIAL PRIMARY KEY, -- PK
+    nome_sala VARCHAR(100) NOT NULL UNIQUE,
+    capacidade INTEGER NOT NULL CHECK (capacidade > 0),
+    has_tv BOOLEAN DEFAULT FALSE,
+    has_whiteboard BOOLEAN DEFAULT FALSE,
+    descricao TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Tabela de Reservas
-CREATE TABLE Bookings (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    room_id INTEGER REFERENCES Rooms(id) ON DELETE CASCADE,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    status VARCHAR(20) DEFAULT 'ativa',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- 3. TABELA: bookings
+CREATE TABLE IF NOT EXISTS bookings (
+    id SERIAL PRIMARY KEY, -- PK
+    user_id INTEGER NOT NULL, -- FK → users(id)
+    room_id INTEGER NOT NULL, -- FK → rooms(id)
+    data_reserva DATE NOT NULL,
+    horario_inicio TIME NOT NULL,
+    horario_fim TIME NOT NULL,
+    motivo_reserva TEXT,
+    status_reserva VARCHAR(50) DEFAULT 'confirmada' CHECK (
+        status_reserva IN ('confirmada', 'cancelada', 'concluida', 'pendente')
+    ),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_booking FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_room_booking FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    CONSTRAINT chk_horario_fim_maior_inicio CHECK (horario_fim > horario_inicio),
+    CONSTRAINT unique_user_active_booking_per_day EXCLUDE (
+        user_id WITH =, data_reserva WITH =
+    ) WHERE (status_reserva IN ('confirmada', 'pendente'))
 );
 
--- 4. Tabela de Recursos Complementares das Salas
-CREATE TABLE Room_Resources (
-    id SERIAL PRIMARY KEY,
-    room_id INTEGER REFERENCES Rooms(id) ON DELETE CASCADE,
-    resource_name VARCHAR(100) NOT NULL
+-- 4. TABELA: booking_history
+CREATE TABLE IF NOT EXISTS booking_history (
+    id SERIAL PRIMARY KEY, -- PK
+    booking_id INTEGER NOT NULL, -- FK → bookings(id)
+    usuario_modificador_id INTEGER, -- FK → users(id)
+    acao_realizada VARCHAR(255) NOT NULL,
+    detalhes_alteracao TEXT,
+    timestamp_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_booking_history FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+    CONSTRAINT fk_modificador FOREIGN KEY (usuario_modificador_id) REFERENCES users(id)
 );
 
+<<<<<<< HEAD
+-- 5. ÍNDICES (Para Desempenho)
+CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_room_id ON bookings(room_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_data_reserva ON bookings(data_reserva);
+CREATE INDEX IF NOT EXISTS idx_booking_history_booking_id ON booking_history(booking_id);
+
+-- 6. Função e triggers para updated_at automático
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER trg_users_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER trg_rooms_updated_at
+BEFORE UPDATE ON rooms
+FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER trg_bookings_updated_at
+BEFORE UPDATE ON bookings
+FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+=======
 -- 5. Tabela de Histórico de Reservas
 CREATE TABLE BookingHistory (
     id SERIAL PRIMARY KEY,
@@ -164,6 +217,7 @@ CREATE TABLE BookingHistory (
     change_type VARCHAR(50),
     changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+>>>>>>> main
 ```
 
 **Diagrama Relacional (ERD):**

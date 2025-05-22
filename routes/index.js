@@ -1,15 +1,23 @@
-// Importa o módulo 'express'
+// routes/index.js
 const express = require('express');
-
-// Cria um novo roteador do Express para definir rotas separadamente do app principal
 const router = express.Router();
 
-// Define uma rota GET para o caminho raiz ("/")
-// Quando alguém acessar http://localhost:3000/, esta função será executada
+// Importar rotas específicas
+const userRoutes = require('./userRoutes');
+const roomRoutes = require('./roomRoutes');
+const bookingRoutes = require('./bookingRoutes');
+const bookingHistoryRoutes = require('./bookingHistoryRoutes');
+
+// Rota básica para verificar se a API está funcionando
 router.get('/', (req, res) => {
-  res.send('API funcionando!'); // Envia uma resposta simples como texto
+  res.json({ message: 'API do Sistema de Reserva de Salas está funcionando!' });
 });
 
-// Exporta o roteador para que possa ser usado em outros arquivos, como no server.js
+// Registrar as rotas específicas
+router.use('/users', userRoutes);
+router.use('/rooms', roomRoutes);
+router.use('/bookings', bookingRoutes);
+router.use('/history', bookingHistoryRoutes);
+
 module.exports = router;
 

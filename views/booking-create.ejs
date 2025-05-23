@@ -1,0 +1,124 @@
+<%- include('./partials/header') %>
+
+<div class="container mt-4">
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+  <% if (message && message.length > 0) { %>
+    <div class="alert alert-success" role="alert">
+      <%= message %>
+    </div>
+  <% } %>
+  
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Nova Reserva</h2>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="/bookings" class="btn btn-secondary">Voltar para Minhas Reservas</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Formulário de Reserva</h4>
+    </div>
+    <div class="card-body">
+      <form action="/bookings/create" method="POST">
+        <div class="mb-3">
+          <label for="roomId" class="form-label">Sala</label>
+          <select class="form-select" id="roomId" name="roomId" required>
+            <option value="">Selecione uma sala</option>
+            <% rooms.forEach(room => { %>
+              <option value="<%= room.id %>" <%= selectedRoomId && selectedRoomId === room.id ? 'selected' : '' %>><%= room.name %> - Capacidade: <%= room.capacity %> pessoas - <%= room.location %></option>
+            <% }); %>
+          </select>
+        </div>
+        
+        <div class="mb-3">
+          <label for="date" class="form-label">Data</label>
+          <input type="date" class="form-control" id="date" name="date" min="<%= new Date().toISOString().split('T')[0] %>" required>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="startTime" class="form-label">Horário de Início</label>
+              <input type="time" class="form-control" id="startTime" name="startTime" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="endTime" class="form-label">Horário de Término</label>
+              <input type="time" class="form-control" id="endTime" name="endTime" required>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="purpose" class="form-label">Finalidade</label>
+          <input type="text" class="form-control" id="purpose" name="purpose" placeholder="Ex: Reunião de projeto, Apresentação, etc." required>
+        </div>
+        
+        <div class="mb-3">
+          <label for="attendees" class="form-label">Número de Participantes</label>
+          <input type="number" class="form-control" id="attendees" name="attendees" min="1" required>
+        </div>
+        
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary">Reservar Sala</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Validar horários
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+      
+      if (startTime >= endTime) {
+        event.preventDefault();
+        alert('O horário de término deve ser posterior ao horário de início.');
+      }
+    });
+    
+    // Validar número de participantes com base na capacidade da sala
+    const roomSelect = document.getElementById('roomId');
+    const attendeesInput = document.getElementById('attendees');
+    
+    roomSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      if (selectedOption.value) {
+        const capacityText = selectedOption.text.match(/Capacidade: (\d+)/);
+        if (capacityText && capacityText[1]) {
+          const capacity = parseInt(capacityText[1]);
+          attendeesInput.max = capacity;
+          attendeesInput.setAttribute('data-capacity', capacity);
+        }
+      }
+    });
+    
+    attendeesInput.addEventListener('input', function() {
+      const capacity = parseInt(this.getAttribute('data-capacity') || 0);
+      if (capacity > 0 && parseInt(this.value) > capacity) {
+        this.setCustomValidity(`A sala comporta apenas ${capacity} pessoas`);
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+    
+    // Disparar o evento change para configurar a capacidade inicial se uma sala já estiver selecionada
+    if (roomSelect.value) {
+      roomSelect.dispatchEvent(new Event('change'));
+    }
+  });
+</script>
+
+<%- include('./partials/footer') %>

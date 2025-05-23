@@ -147,7 +147,3 @@ async function runAllTests() {
 
 // Executar os testes
 runAllTests();
-
-
-
-

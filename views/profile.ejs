@@ -1,0 +1,88 @@
+<%- include('./partials/header') %>
+
+<div class="container mt-4">
+  <% if (message && message.length > 0) { %>
+    <div class="alert alert-success" role="alert">
+      <%= message %>
+    </div>
+  <% } %>
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+  
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Meu Perfil</h2>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Informações Pessoais</h4>
+    </div>
+    <div class="card-body">
+      <form action="/profile" method="POST">
+        <div class="mb-3">
+          <label for="name" class="form-label">Nome completo</label>
+          <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+        </div>
+        
+        <hr class="my-4">
+        <h5>Alterar Senha</h5>
+        <p class="text-muted">Preencha os campos abaixo apenas se desejar alterar sua senha.</p>
+        
+        <div class="mb-3">
+          <label for="currentPassword" class="form-label">Senha atual</label>
+          <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+        </div>
+        <div class="mb-3">
+          <label for="newPassword" class="form-label">Nova senha</label>
+          <input type="password" class="form-control" id="newPassword" name="newPassword">
+        </div>
+        <div class="mb-3">
+          <label for="confirmPassword" class="form-label">Confirmar nova senha</label>
+          <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+        </div>
+        
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary">Atualizar Perfil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const currentPassword = document.getElementById('currentPassword').value;
+      
+      // Se algum campo de senha estiver preenchido, todos devem estar
+      if (newPassword || confirmPassword || currentPassword) {
+        if (!newPassword || !confirmPassword || !currentPassword) {
+          event.preventDefault();
+          alert('Para alterar a senha, preencha todos os campos de senha.');
+          return;
+        }
+        
+        // Verificar se as senhas coincidem
+        if (newPassword !== confirmPassword) {
+          event.preventDefault();
+          alert('As novas senhas não coincidem.');
+          return;
+        }
+      }
+    });
+  });
+</script>
+
+<%- include('./partials/footer') %>

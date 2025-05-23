@@ -37,5 +37,18 @@
     "status": "cancelled",
     "createdAt": "2025-05-23T19:02:54.177Z",
     "updatedAt": "2025-05-23T19:02:58.997Z"
+  },
+  {
+    "id": 4,
+    "roomId": 5,
+    "userId": 3,
+    "date": "2025-05-28",
+    "startTime": "17:01",
+    "endTime": "21:55",
+    "purpose": "Opa",
+    "attendees": 1,
+    "status": "cancelled",
+    "createdAt": "2025-05-23T20:55:26.069Z",
+    "updatedAt": "2025-05-23T20:56:18.056Z"
   }
 ]

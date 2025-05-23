@@ -1,0 +1,81 @@
+<%- include('./partials/header') %>
+
+<div class="container mt-4">
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+  <% if (message && message.length > 0) { %>
+    <div class="alert alert-success" role="alert">
+      <%= message %>
+    </div>
+  <% } %>
+  
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Detalhes da Sala</h2>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="/rooms" class="btn btn-secondary">Voltar para Salas</a>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0"><%= room.name %></h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Informações da Sala</h5>
+          <p><strong>Código:</strong> <%= room.code || room.name %></p>
+          <p><strong>Capacidade:</strong> <%= room.capacity %> pessoas</p>
+          <p><strong>Localização:</strong> <%= room.location %></p>
+          <p><strong>Recursos:</strong> <%= room.resources %></p>
+          <p><strong>Descrição:</strong> <%= room.description %></p>
+        </div>
+        <div class="col-md-6">
+          <h5>Disponibilidade</h5>
+          <% if (bookings && bookings.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% bookings.forEach(booking => { %>
+                    <tr>
+                      <td><%= booking.date %></td>
+                      <td><%= booking.startTime %> - <%= booking.endTime %></td>
+                      <td>
+                        <% if (booking.status === 'confirmed') { %>
+                          <span class="badge bg-success">Confirmada</span>
+                        <% } else if (booking.status === 'pending') { %>
+                          <span class="badge bg-warning">Pendente</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <p class="text-success">Não há reservas futuras para esta sala.</p>
+          <% } %>
+        </div>
+      </div>
+      
+      <hr class="my-4">
+      <div class="d-grid gap-2">
+        <a href="/bookings/create?roomId=<%= room.id %>" class="btn btn-primary">Reservar Esta Sala</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

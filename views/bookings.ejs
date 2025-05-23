@@ -1,0 +1,115 @@
+<%- include('./partials/header') %>
+
+<div class="container mt-4">
+  <% if (message && message.length > 0) { %>
+    <div class="alert alert-success" role="alert">
+      <%= message %>
+    </div>
+  <% } %>
+  
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Minhas Reservas</h2>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="/bookings/create" class="btn btn-primary">Nova Reserva</a>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Reservas Ativas</h4>
+    </div>
+    <div class="card-body">
+      <% if (activeBookings && activeBookings.length > 0) { %>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Sala</th>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Finalidade</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% activeBookings.forEach(booking => { %>
+                <tr>
+                  <td><%= booking.room ? booking.room.name : `Sala ${booking.roomId}` %></td>
+                  <td><%= booking.date %></td>
+                  <td><%= booking.startTime %> - <%= booking.endTime %></td>
+                  <td><%= booking.purpose %></td>
+                  <td>
+                    <% if (booking.status === 'confirmed') { %>
+                      <span class="badge bg-success">Confirmada</span>
+                    <% } else if (booking.status === 'pending') { %>
+                      <span class="badge bg-warning">Pendente</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <a href="/bookings/<%= booking.id %>" class="btn btn-sm btn-info">Detalhes</a>
+                    <form action="/bookings/<%= booking.id %>/cancel" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?')">Cancelar</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <p class="text-center">Você não possui reservas ativas.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-secondary text-white">
+      <h4 class="mb-0">Histórico de Reservas</h4>
+    </div>
+    <div class="card-body">
+      <% if (pastBookings && pastBookings.length > 0) { %>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Sala</th>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Finalidade</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% pastBookings.forEach(booking => { %>
+                <tr>
+                  <td><%= booking.room ? booking.room.name : `Sala ${booking.roomId}` %></td>
+                  <td><%= booking.date %></td>
+                  <td><%= booking.startTime %> - <%= booking.endTime %></td>
+                  <td><%= booking.purpose %></td>
+                  <td>
+                    <% if (booking.status === 'completed') { %>
+                      <span class="badge bg-info">Concluída</span>
+                    <% } else if (booking.status === 'cancelled') { %>
+                      <span class="badge bg-danger">Cancelada</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <a href="/bookings/<%= booking.id %>" class="btn btn-sm btn-info">Detalhes</a>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <p class="text-center">Você não possui histórico de reservas.</p>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

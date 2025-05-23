@@ -15,5 +15,14 @@
     "role": "user",
     "createdAt": "2025-05-23T18:56:46.471Z",
     "updatedAt": "2025-05-23T18:56:46.471Z"
+  },
+  {
+    "id": 3,
+    "name": "Joao",
+    "email": "Joao@gmail.com",
+    "password": "$2b$10$rjDcAlDcz1wUEmllILVy.eIR/imU.RtGTeBRUbFNpe58OxT.P7ZOu",
+    "role": "user",
+    "createdAt": "2025-05-23T20:54:36.169Z",
+    "updatedAt": "2025-05-23T20:58:05.917Z"
   }
 ]

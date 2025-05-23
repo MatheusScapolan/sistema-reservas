@@ -1,0 +1,70 @@
+<%- include('./partials/header') %>
+
+<div class="container mt-4">
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+  <% if (message && message.length > 0) { %>
+    <div class="alert alert-success" role="alert">
+      <%= message %>
+    </div>
+  <% } %>
+  
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Detalhes da Reserva</h2>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="/bookings" class="btn btn-secondary">Voltar para Minhas Reservas</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Informações da Reserva</h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Detalhes da Sala</h5>
+          <p><strong>Nome da Sala:</strong> <%= room.name %></p>
+          <p><strong>Capacidade:</strong> <%= room.capacity %> pessoas</p>
+          <p><strong>Localização:</strong> <%= room.location %></p>
+          <p><strong>Recursos:</strong> <%= room.resources %></p>
+        </div>
+        <div class="col-md-6">
+          <h5>Detalhes da Reserva</h5>
+          <p><strong>Data:</strong> <%= booking.date %></p>
+          <p><strong>Horário:</strong> <%= booking.startTime %> - <%= booking.endTime %></p>
+          <p><strong>Finalidade:</strong> <%= booking.purpose %></p>
+          <p><strong>Participantes:</strong> <%= booking.attendees %> pessoas</p>
+          <p>
+            <strong>Status:</strong> 
+            <% if (booking.status === 'confirmed') { %>
+              <span class="badge bg-success">Confirmada</span>
+            <% } else if (booking.status === 'pending') { %>
+              <span class="badge bg-warning">Pendente</span>
+            <% } else if (booking.status === 'cancelled') { %>
+              <span class="badge bg-danger">Cancelada</span>
+            <% } else if (booking.status === 'completed') { %>
+              <span class="badge bg-info">Concluída</span>
+            <% } %>
+          </p>
+        </div>
+      </div>
+      
+      <% if (booking.status !== 'cancelled' && booking.status !== 'completed') { %>
+        <hr class="my-4">
+        <div class="d-grid gap-2">
+          <form action="/bookings/<%= booking.id %>/cancel" method="POST">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?')">Cancelar Reserva</button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

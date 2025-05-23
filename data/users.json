@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1,
+    "name": "Administrador",
+    "email": "admin@inteli.edu.br",
+    "password": "$2b$10$KgyPgCZ15deDmxa19L8gQOWsan1VVC.G8ho1sLNYyXyXknjpvuIpO",
+    "role": "admin",
+    "createdAt": "2025-05-23T17:41:47.791Z"
+  },
+  {
+    "id": 2,
+    "name": "Matheus Henrique Scapolan Silva",
+    "email": "matheus8scapolan@gmail.com",
+    "password": "$2b$10$MTXrLZCClDn0wQ7w5lsNEOGRyn7vrcjUNi7qUDE2Shaj6X4BxwTKa",
+    "role": "user",
+    "createdAt": "2025-05-23T18:56:46.471Z",
+    "updatedAt": "2025-05-23T18:56:46.471Z"
+  }
+]

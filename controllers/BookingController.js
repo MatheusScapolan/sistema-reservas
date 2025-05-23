@@ -1,413 +1,382 @@
 // controllers/BookingController.js
-const Booking = require('../models/Booking.js');
-const Room = require('../models/Room.js');
-const User = require('../models/User.js');
-const BookingHistory = require('../models/BookingHistory.js');
+const Database = require('../models/Database');
 
-// Controller para operações relacionadas a reservas
 class BookingController {
   // Criar uma nova reserva
   static async create(req, res) {
     try {
-      const { user_id, room_id, data_reserva, horario_inicio, horario_fim, motivo_reserva, status_reserva } = req.body;
-
-      // Validações básicas
-      if (!user_id || !room_id || !data_reserva || !horario_inicio || !horario_fim) {
+      const { roomId, date, startTime, endTime, purpose, attendees } = req.body;
+      
+      // Validar campos obrigatórios
+      if (!roomId || !date || !startTime || !endTime || !purpose || !attendees) {
         return res.status(400).json({ 
-          error: 'Dados incompletos. Usuário, sala, data e horários são obrigatórios.' 
+          success: false, 
+          message: 'Todos os campos são obrigatórios' 
         });
       }
-
-      // Verificar se o usuário existe
-      const user = await User.findById(user_id);
-      if (!user) {
-        return res.status(404).json({ 
-          error: 'Usuário não encontrado.' 
-        });
-      }
-
+      
       // Verificar se a sala existe
-      const room = await Room.findById(room_id);
+      const room = Database.rooms.getById(parseInt(roomId));
       if (!room) {
         return res.status(404).json({ 
-          error: 'Sala não encontrada.' 
+          success: false, 
+          message: 'Sala não encontrada' 
         });
       }
-
-      // Verificar se o horário de fim é posterior ao horário de início
-      if (horario_fim <= horario_inicio) {
+      
+      // Verificar se a capacidade da sala é suficiente
+      if (parseInt(attendees) > room.capacity) {
         return res.status(400).json({ 
-          error: 'O horário de término deve ser posterior ao horário de início.' 
+          success: false, 
+          message: `A sala comporta apenas ${room.capacity} pessoas` 
         });
       }
-
-      // Verificar disponibilidade da sala
-      const isAvailable = await Booking.checkAvailability(room_id, data_reserva, horario_inicio, horario_fim);
+      
+      // Verificar disponibilidade
+      const isAvailable = Database.bookings.checkAvailability(roomId, date, startTime, endTime);
       if (!isAvailable) {
-        return res.status(409).json({ 
-          error: 'A sala já está reservada para o horário solicitado.' 
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Sala não disponível no horário solicitado' 
         });
       }
-
+      
       // Criar a reserva
-      const newBooking = await Booking.create(
-        user_id,
-        room_id,
-        data_reserva,
-        horario_inicio,
-        horario_fim,
-        motivo_reserva || '',
-        status_reserva || 'confirmada'
-      );
-
-      // Registrar no histórico
-      await BookingHistory.create(
-        newBooking.id,
-        user_id,
-        'criação',
-        `Reserva criada por ${user.nome_completo}`
-      );
-
-      res.status(201).json(newBooking);
+      const newBooking = Database.bookings.create({
+        roomId: parseInt(roomId),
+        userId: req.user.id, // ID do usuário autenticado
+        date,
+        startTime,
+        endTime,
+        purpose,
+        attendees: parseInt(attendees),
+        status: 'confirmed'
+      });
+      
+      if (newBooking.error) {
+        return res.status(400).json({ 
+          success: false, 
+          message: newBooking.error 
+        });
+      }
+      
+      res.status(201).json({
+        success: true,
+        message: 'Reserva criada com sucesso',
+        booking: newBooking
+      });
     } catch (error) {
       console.error('Erro ao criar reserva:', error);
       res.status(500).json({ 
-        error: 'Erro interno do servidor ao criar reserva.' 
+        success: false, 
+        message: 'Erro interno do servidor ao criar reserva' 
       });
     }
   }
-
-  // Listar todas as reservas
+  
+  // Obter todas as reservas
   static async getAll(req, res) {
     try {
-      const bookings = await Booking.findAll();
-      res.status(200).json(bookings);
+      // Se o usuário for admin, retornar todas as reservas
+      // Caso contrário, retornar apenas as reservas do usuário
+      let bookings;
+      
+      if (req.user && req.user.role === 'admin') {
+        bookings = Database.bookings.getAll();
+        
+        // Adicionar informações da sala a cada reserva
+        bookings = bookings.map(booking => {
+          const room = Database.rooms.getById(booking.roomId);
+          return {
+            ...booking,
+            room: room ? { 
+              id: room.id,
+              name: room.name,
+              capacity: room.capacity,
+              location: room.location
+            } : null
+          };
+        });
+      } else {
+        bookings = Database.bookings.getByUser(req.user.id);
+      }
+      
+      res.json(bookings);
     } catch (error) {
       console.error('Erro ao listar reservas:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao listar reservas.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao listar reservas.' });
     }
   }
-
-  // Buscar reserva por ID
+  
+  // Obter reserva por ID
   static async getById(req, res) {
     try {
       const { id } = req.params;
-      const booking = await Booking.findById(id);
+      const booking = Database.bookings.getById(parseInt(id));
       
       if (!booking) {
-        return res.status(404).json({ 
-          error: 'Reserva não encontrada.' 
-        });
+        return res.status(404).json({ message: 'Reserva não encontrada' });
       }
       
-      res.status(200).json(booking);
+      // Verificar se o usuário tem permissão para ver esta reserva
+      if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Acesso negado' });
+      }
+      
+      // Adicionar informações da sala
+      const room = Database.rooms.getById(booking.roomId);
+      const bookingWithRoom = {
+        ...booking,
+        room: room ? { 
+          id: room.id,
+          name: room.name,
+          capacity: room.capacity,
+          location: room.location,
+          resources: room.resources
+        } : null
+      };
+      
+      res.json(bookingWithRoom);
     } catch (error) {
-      console.error('Erro ao buscar reserva:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao buscar reserva.' 
-      });
+      console.error('Erro ao buscar reserva por ID:', error);
+      res.status(500).json({ error: 'Erro interno do servidor ao buscar reserva.' });
     }
   }
-
-  // Buscar reservas por usuário
+  
+  // Obter reservas por usuário
   static async getByUser(req, res) {
     try {
       const { user_id } = req.params;
       
-      // Verificar se o usuário existe
-      const user = await User.findById(user_id);
-      if (!user) {
-        return res.status(404).json({ 
-          error: 'Usuário não encontrado.' 
-        });
+      // Verificar se o usuário tem permissão para ver estas reservas
+      if (req.user.role !== 'admin' && parseInt(user_id) !== req.user.id) {
+        return res.status(403).json({ message: 'Acesso negado' });
       }
       
-      const bookings = await Booking.findByUser(user_id);
-      res.status(200).json(bookings);
+      const bookings = Database.bookings.getByUser(parseInt(user_id));
+      
+      res.json(bookings);
     } catch (error) {
       console.error('Erro ao buscar reservas por usuário:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao buscar reservas por usuário.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao buscar reservas por usuário.' });
     }
   }
-
-  // Buscar reservas por sala
+  
+  // Obter reservas por sala
   static async getByRoom(req, res) {
     try {
       const { room_id } = req.params;
       
       // Verificar se a sala existe
-      const room = await Room.findById(room_id);
+      const room = Database.rooms.getById(parseInt(room_id));
       if (!room) {
-        return res.status(404).json({ 
-          error: 'Sala não encontrada.' 
-        });
+        return res.status(404).json({ message: 'Sala não encontrada' });
       }
       
-      const bookings = await Booking.findByRoom(room_id);
-      res.status(200).json(bookings);
+      const bookings = Database.bookings.getByRoom(parseInt(room_id));
+      
+      // Adicionar informações do usuário a cada reserva (sem expor dados sensíveis)
+      const bookingsWithUser = bookings.map(booking => {
+        const user = Database.users.getById(booking.userId);
+        return {
+          ...booking,
+          user: user ? { 
+            id: user.id,
+            name: user.name
+          } : null
+        };
+      });
+      
+      res.json(bookingsWithUser);
     } catch (error) {
       console.error('Erro ao buscar reservas por sala:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao buscar reservas por sala.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao buscar reservas por sala.' });
     }
   }
-
-  // Buscar reservas por data
+  
+  // Obter reservas por data
   static async getByDate(req, res) {
     try {
-      const { data } = req.params;
+      const { date } = req.params;
+      const bookings = Database.bookings.getByDate(date);
       
-      // Validar formato da data
-      if (!data.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        return res.status(400).json({ 
-          error: 'Formato de data inválido. Use o formato YYYY-MM-DD.' 
-        });
-      }
+      // Adicionar informações da sala e do usuário a cada reserva
+      const bookingsWithDetails = bookings.map(booking => {
+        const room = Database.rooms.getById(booking.roomId);
+        const user = Database.users.getById(booking.userId);
+        
+        return {
+          ...booking,
+          room: room ? { 
+            id: room.id,
+            name: room.name,
+            capacity: room.capacity,
+            location: room.location
+          } : null,
+          user: user ? { 
+            id: user.id,
+            name: user.name
+          } : null
+        };
+      });
       
-      const bookings = await Booking.findByDate(data);
-      res.status(200).json(bookings);
+      res.json(bookingsWithDetails);
     } catch (error) {
       console.error('Erro ao buscar reservas por data:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao buscar reservas por data.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao buscar reservas por data.' });
     }
   }
-
-  // Verificar disponibilidade da sala
+  
+  // Verificar disponibilidade
   static async checkAvailability(req, res) {
     try {
-      const { room_id, data_reserva, horario_inicio, horario_fim } = req.query;
+      const { roomId, date, startTime, endTime } = req.query;
       
-      // Validações básicas
-      if (!room_id || !data_reserva || !horario_inicio || !horario_fim) {
-        return res.status(400).json({ 
-          error: 'Dados incompletos. Sala, data e horários são obrigatórios.' 
-        });
+      if (!roomId || !date || !startTime || !endTime) {
+        return res.status(400).json({ message: 'Todos os parâmetros são obrigatórios' });
       }
       
-      // Verificar se a sala existe
-      const room = await Room.findById(room_id);
-      if (!room) {
-        return res.status(404).json({ 
-          error: 'Sala não encontrada.' 
-        });
-      }
+      const isAvailable = Database.bookings.checkAvailability(
+        parseInt(roomId), 
+        date, 
+        startTime, 
+        endTime
+      );
       
-      // Verificar disponibilidade
-      const isAvailable = await Booking.checkAvailability(room_id, data_reserva, horario_inicio, horario_fim);
-      
-      res.status(200).json({ 
-        available: isAvailable 
-      });
+      res.json({ available: isAvailable });
     } catch (error) {
       console.error('Erro ao verificar disponibilidade:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao verificar disponibilidade.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao verificar disponibilidade.' });
     }
   }
-
+  
   // Atualizar reserva
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const { room_id, data_reserva, horario_inicio, horario_fim, motivo_reserva, status_reserva, usuario_modificador_id } = req.body;
+      const { roomId, date, startTime, endTime, purpose, attendees } = req.body;
       
-      // Verificar se a reserva existe
-      const existingBooking = await Booking.findById(id);
-      if (!existingBooking) {
-        return res.status(404).json({ 
-          error: 'Reserva não encontrada.' 
-        });
+      // Buscar a reserva
+      const booking = Database.bookings.getById(parseInt(id));
+      
+      if (!booking) {
+        return res.status(404).json({ message: 'Reserva não encontrada' });
       }
       
-      // Verificar se o usuário modificador existe
-      if (usuario_modificador_id) {
-        const modificador = await User.findById(usuario_modificador_id);
-        if (!modificador) {
-          return res.status(404).json({ 
-            error: 'Usuário modificador não encontrado.' 
-          });
-        }
+      // Verificar se o usuário tem permissão para atualizar esta reserva
+      if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Acesso negado' });
       }
       
-      // Verificar se a sala existe, se for alterada
-      if (room_id && room_id !== existingBooking.room_id) {
-        const room = await Room.findById(room_id);
+      // Verificar se a sala existe (se foi alterada)
+      if (roomId && parseInt(roomId) !== booking.roomId) {
+        const room = Database.rooms.getById(parseInt(roomId));
         if (!room) {
-          return res.status(404).json({ 
-            error: 'Sala não encontrada.' 
-          });
+          return res.status(404).json({ message: 'Sala não encontrada' });
         }
-      }
-      
-      // Verificar se o horário de fim é posterior ao horário de início
-      if ((horario_inicio && horario_fim) && horario_fim <= horario_inicio) {
-        return res.status(400).json({ 
-          error: 'O horário de término deve ser posterior ao horário de início.' 
-        });
-      }
-      
-      // Verificar disponibilidade da sala se houver mudança de sala, data ou horário
-      const updatedRoomId = room_id || existingBooking.room_id;
-      const updatedData = data_reserva || existingBooking.data_reserva;
-      const updatedInicio = horario_inicio || existingBooking.horario_inicio;
-      const updatedFim = horario_fim || existingBooking.horario_fim;
-      
-      if (updatedRoomId !== existingBooking.room_id || 
-          updatedData !== existingBooking.data_reserva || 
-          updatedInicio !== existingBooking.horario_inicio || 
-          updatedFim !== existingBooking.horario_fim) {
         
-        const isAvailable = await Booking.checkAvailability(updatedRoomId, updatedData, updatedInicio, updatedFim);
-        if (!isAvailable) {
-          return res.status(409).json({ 
-            error: 'A sala já está reservada para o horário solicitado.' 
-          });
+        // Verificar se a capacidade da sala é suficiente
+        if (attendees && parseInt(attendees) > room.capacity) {
+          return res.status(400).json({ message: `A sala comporta apenas ${room.capacity} pessoas` });
         }
       }
       
       // Atualizar a reserva
-      const updatedBooking = await Booking.update(
-        id,
-        updatedRoomId,
-        updatedData,
-        updatedInicio,
-        updatedFim,
-        motivo_reserva !== undefined ? motivo_reserva : existingBooking.motivo_reserva,
-        status_reserva || existingBooking.status_reserva
-      );
+      const updatedBooking = Database.bookings.update(parseInt(id), {
+        roomId: roomId ? parseInt(roomId) : undefined,
+        date,
+        startTime,
+        endTime,
+        purpose,
+        attendees: attendees ? parseInt(attendees) : undefined
+      });
       
-      // Registrar no histórico
-      if (usuario_modificador_id) {
-        const modificador = await User.findById(usuario_modificador_id);
-        await BookingHistory.create(
-          id,
-          usuario_modificador_id,
-          'atualização',
-          `Reserva atualizada por ${modificador.nome_completo}`
-        );
+      if (updatedBooking.error) {
+        return res.status(400).json({ message: updatedBooking.error });
       }
       
-      res.status(200).json(updatedBooking);
+      res.json({
+        success: true,
+        message: 'Reserva atualizada com sucesso',
+        booking: updatedBooking
+      });
     } catch (error) {
       console.error('Erro ao atualizar reserva:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao atualizar reserva.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao atualizar reserva.' });
     }
   }
-
+  
   // Atualizar status da reserva
   static async updateStatus(req, res) {
     try {
       const { id } = req.params;
-      const { status_reserva, usuario_modificador_id } = req.body;
+      const { status } = req.body;
       
-      // Validações básicas
-      if (!status_reserva) {
-        return res.status(400).json({ 
-          error: 'Status da reserva é obrigatório.' 
-        });
+      if (!status) {
+        return res.status(400).json({ message: 'Status é obrigatório' });
       }
       
-      // Verificar se o status é válido
-      if (!['confirmada', 'cancelada', 'concluida', 'pendente'].includes(status_reserva)) {
-        return res.status(400).json({ 
-          error: 'Status inválido. Use: confirmada, cancelada, concluida ou pendente.' 
-        });
+      // Buscar a reserva
+      const booking = Database.bookings.getById(parseInt(id));
+      
+      if (!booking) {
+        return res.status(404).json({ message: 'Reserva não encontrada' });
       }
       
-      // Verificar se a reserva existe
-      const existingBooking = await Booking.findById(id);
-      if (!existingBooking) {
-        return res.status(404).json({ 
-          error: 'Reserva não encontrada.' 
-        });
+      // Verificar se o usuário tem permissão para atualizar esta reserva
+      if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Acesso negado' });
       }
       
-      // Verificar se o usuário modificador existe
-      if (usuario_modificador_id) {
-        const modificador = await User.findById(usuario_modificador_id);
-        if (!modificador) {
-          return res.status(404).json({ 
-            error: 'Usuário modificador não encontrado.' 
-          });
-        }
+      // Atualizar o status
+      const updatedBooking = Database.bookings.updateStatus(parseInt(id), status);
+      
+      if (!updatedBooking) {
+        return res.status(404).json({ message: 'Reserva não encontrada' });
       }
       
-      // Atualizar o status da reserva
-      const updatedBooking = await Booking.updateStatus(id, status_reserva);
-      
-      // Registrar no histórico
-      if (usuario_modificador_id) {
-        const modificador = await User.findById(usuario_modificador_id);
-        await BookingHistory.create(
-          id,
-          usuario_modificador_id,
-          'alteração de status',
-          `Status alterado para "${status_reserva}" por ${modificador.nome_completo}`
-        );
-      }
-      
-      res.status(200).json(updatedBooking);
+      res.json({
+        success: true,
+        message: 'Status da reserva atualizado com sucesso',
+        booking: updatedBooking
+      });
     } catch (error) {
       console.error('Erro ao atualizar status da reserva:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao atualizar status da reserva.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao atualizar status da reserva.' });
     }
   }
-
-  // Excluir reserva
+  
+  // Cancelar reserva
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const { usuario_modificador_id } = req.body;
       
-      // Verificar se a reserva existe
-      const existingBooking = await Booking.findById(id);
-      if (!existingBooking) {
-        return res.status(404).json({ 
-          error: 'Reserva não encontrada.' 
-        });
+      // Buscar a reserva
+      const booking = Database.bookings.getById(parseInt(id));
+      
+      if (!booking) {
+        return res.status(404).json({ message: 'Reserva não encontrada' });
       }
       
-      // Verificar se o usuário modificador existe
-      if (usuario_modificador_id) {
-        const modificador = await User.findById(usuario_modificador_id);
-        if (!modificador) {
-          return res.status(404).json({ 
-            error: 'Usuário modificador não encontrado.' 
-          });
-        }
-        
-        // Registrar no histórico antes de excluir
-        await BookingHistory.create(
-          id,
-          usuario_modificador_id,
-          'exclusão',
-          `Reserva excluída por ${modificador.nome_completo}`
-        );
+      // Verificar se o usuário tem permissão para cancelar esta reserva
+      if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Acesso negado' });
       }
       
-      // Excluir a reserva
-      await Booking.delete(id);
+      // Cancelar a reserva (atualizar status para 'cancelled')
+      const updatedBooking = Database.bookings.updateStatus(parseInt(id), 'cancelled');
       
-      res.status(200).json({ 
-        message: 'Reserva excluída com sucesso.' 
+      if (!updatedBooking) {
+        return res.status(404).json({ message: 'Reserva não encontrada' });
+      }
+      
+      res.json({ 
+        success: true,
+        message: 'Reserva cancelada com sucesso' 
       });
     } catch (error) {
-      console.error('Erro ao excluir reserva:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao excluir reserva.' 
-      });
+      console.error('Erro ao cancelar reserva:', error);
+      res.status(500).json({ error: 'Erro interno do servidor ao cancelar reserva.' });
     }
   }
 }

@@ -1,134 +1,176 @@
 // controllers/BookingHistoryController.js
-const BookingHistory = require('../models/BookingHistory.js');
-const Booking = require('../models/Booking.js');
-const User = require('../models/User.js');
+// Versão completamente independente sem dependências externas
 
-// Controller para operações relacionadas ao histórico de reservas
-class BookingHistoryController {
-  // Registrar uma nova entrada no histórico
-  static async create(req, res) {
-    try {
-      const { booking_id, usuario_modificador_id, acao_realizada, detalhes_alteracao } = req.body;
-
-      // Validações básicas
-      if (!booking_id || !usuario_modificador_id || !acao_realizada) {
-        return res.status(400).json({ 
-          error: 'Dados incompletos. ID da reserva, usuário modificador e ação realizada são obrigatórios.' 
-        });
-      }
-
-      // Verificar se a reserva existe
-      const booking = await Booking.findById(booking_id);
-      if (!booking) {
-        return res.status(404).json({ 
-          error: 'Reserva não encontrada.' 
-        });
-      }
-
-      // Verificar se o usuário modificador existe
-      const user = await User.findById(usuario_modificador_id);
-      if (!user) {
-        return res.status(404).json({ 
-          error: 'Usuário modificador não encontrado.' 
-        });
-      }
-
-      // Criar o registro no histórico
-      const newHistoryEntry = await BookingHistory.create(
-        booking_id,
-        usuario_modificador_id,
-        acao_realizada,
-        detalhes_alteracao || ''
-      );
-
-      res.status(201).json(newHistoryEntry);
-    } catch (error) {
-      console.error('Erro ao registrar histórico:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao registrar histórico.' 
-      });
+// Dados mock para quando não houver banco de dados
+const mockHistory = [
+  {
+    id: 1,
+    bookingId: 1,
+    userId: 1,
+    roomId: 1,
+    date: '2025-04-15',
+    startTime: '10:00',
+    endTime: '12:00',
+    purpose: 'Reunião de planejamento estratégico',
+    attendees: 8,
+    status: 'completed',
+    room: {
+      id: 1,
+      name: 'Sala de Reunião 1',
+      capacity: 10
+    },
+    user: {
+      id: 1,
+      name: 'João Silva',
+      email: 'joao.silva@inteli.edu.br'
+    }
+  },
+  {
+    id: 2,
+    bookingId: 2,
+    userId: 1,
+    roomId: 3,
+    date: '2025-04-20',
+    startTime: '14:00',
+    endTime: '16:00',
+    purpose: 'Apresentação de projeto final',
+    attendees: 50,
+    status: 'completed',
+    room: {
+      id: 3,
+      name: 'Auditório Principal',
+      capacity: 100
+    },
+    user: {
+      id: 1,
+      name: 'João Silva',
+      email: 'joao.silva@inteli.edu.br'
+    }
+  },
+  {
+    id: 3,
+    bookingId: 3,
+    userId: 1,
+    roomId: 2,
+    date: '2025-05-01',
+    startTime: '09:00',
+    endTime: '11:00',
+    purpose: 'Workshop de inovação',
+    attendees: 15,
+    status: 'cancelled',
+    room: {
+      id: 2,
+      name: 'Laboratório de Inovação',
+      capacity: 20
+    },
+    user: {
+      id: 1,
+      name: 'João Silva',
+      email: 'joao.silva@inteli.edu.br'
     }
   }
+];
 
-  // Listar todo o histórico
-  static async getAll(req, res) {
+// Controlador de Histórico de Reservas sem dependências externas
+const BookingHistoryController = {
+  // Obter todo o histórico
+  getAll: (req, res) => {
     try {
-      const history = await BookingHistory.findAll();
-      res.status(200).json(history);
+      res.json(mockHistory);
     } catch (error) {
-      console.error('Erro ao listar histórico:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao listar histórico.' 
-      });
+      console.error('Erro ao listar histórico de reservas:', error);
+      res.status(500).json({ error: 'Erro interno do servidor ao listar histórico de reservas.' });
     }
-  }
-
-  // Buscar histórico por ID
-  static async getById(req, res) {
+  },
+  
+  // Obter histórico por ID
+  getById: (req, res) => {
     try {
       const { id } = req.params;
-      const historyEntry = await BookingHistory.findById(id);
       
-      if (!historyEntry) {
-        return res.status(404).json({ 
-          error: 'Registro de histórico não encontrado.' 
-        });
+      const history = mockHistory.find(h => h.id === parseInt(id));
+      
+      if (!history) {
+        return res.status(404).json({ message: 'Histórico não encontrado' });
       }
       
-      res.status(200).json(historyEntry);
+      res.json(history);
     } catch (error) {
       console.error('Erro ao buscar histórico por ID:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao buscar histórico por ID.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao buscar histórico.' });
     }
-  }
-
-  // Buscar histórico por reserva
-  static async getByBooking(req, res) {
+  },
+  
+  // Obter histórico por reserva
+  getByBooking: (req, res) => {
     try {
       const { booking_id } = req.params;
       
-      // Verificar se a reserva existe
-      const booking = await Booking.findById(booking_id);
-      if (!booking) {
-        return res.status(404).json({ 
-          error: 'Reserva não encontrada.' 
-        });
-      }
+      const bookingHistory = mockHistory.filter(h => h.bookingId === parseInt(booking_id));
       
-      const history = await BookingHistory.findByBooking(booking_id);
-      res.status(200).json(history);
+      res.json(bookingHistory);
     } catch (error) {
       console.error('Erro ao buscar histórico por reserva:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao buscar histórico por reserva.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao buscar histórico por reserva.' });
     }
-  }
-
-  // Buscar histórico por usuário modificador
-  static async getByUser(req, res) {
+  },
+  
+  // Obter histórico por usuário
+  getByUser: (req, res) => {
     try {
       const { user_id } = req.params;
       
-      // Verificar se o usuário existe
-      const user = await User.findById(user_id);
-      if (!user) {
-        return res.status(404).json({ 
-          error: 'Usuário não encontrado.' 
-        });
-      }
+      const userHistory = mockHistory.filter(h => h.userId === parseInt(user_id));
       
-      const history = await BookingHistory.findByUser(user_id);
-      res.status(200).json(history);
+      res.json(userHistory);
     } catch (error) {
       console.error('Erro ao buscar histórico por usuário:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor ao buscar histórico por usuário.' 
-      });
+      res.status(500).json({ error: 'Erro interno do servidor ao buscar histórico por usuário.' });
+    }
+  },
+  
+  // Adicionar ao histórico
+  create: (req, res) => {
+    try {
+      const { bookingId, userId, roomId, date, startTime, endTime, purpose, attendees, status } = req.body;
+      
+      if (!bookingId || !userId || !roomId || !date || !startTime || !endTime || !purpose || !attendees || !status) {
+        return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+      }
+      
+      // Criar novo registro de histórico
+      const newHistory = {
+        id: mockHistory.length + 1,
+        bookingId,
+        userId,
+        roomId,
+        date,
+        startTime,
+        endTime,
+        purpose,
+        attendees,
+        status,
+        room: {
+          id: roomId,
+          name: `Sala ${roomId}`,
+          capacity: 20
+        },
+        user: {
+          id: userId,
+          name: 'Usuário Teste',
+          email: 'usuario@inteli.edu.br'
+        }
+      };
+      
+      // Adicionar à lista de histórico mock
+      mockHistory.push(newHistory);
+      
+      res.status(201).json(newHistory);
+    } catch (error) {
+      console.error('Erro ao adicionar ao histórico:', error);
+      res.status(500).json({ error: 'Erro interno do servidor ao adicionar ao histórico.' });
     }
   }
-}
+};
 
 module.exports = BookingHistoryController;

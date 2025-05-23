@@ -10,4 +10,4 @@ router.get('/:id', BookingHistoryController.getById);
 router.get('/booking/:booking_id', BookingHistoryController.getByBooking);
 router.get('/user/:user_id', BookingHistoryController.getByUser);
 
-module.exports = router;
+module.exports = router;    

@@ -50,5 +50,31 @@
     "status": "cancelled",
     "createdAt": "2025-05-23T20:55:26.069Z",
     "updatedAt": "2025-05-23T20:56:18.056Z"
+  },
+  {
+    "id": 5,
+    "roomId": 1,
+    "userId": 2,
+    "date": "2025-05-26",
+    "startTime": "12:00",
+    "endTime": "13:00",
+    "purpose": "Projeto",
+    "attendees": 1,
+    "status": "cancelled",
+    "createdAt": "2025-05-24T19:22:28.711Z",
+    "updatedAt": "2025-05-24T19:25:32.119Z"
+  },
+  {
+    "id": 6,
+    "roomId": 1,
+    "userId": 4,
+    "date": "2025-05-26",
+    "startTime": "12:00",
+    "endTime": "13:28",
+    "purpose": "Projeto",
+    "attendees": 1,
+    "status": "confirmed",
+    "createdAt": "2025-05-24T19:26:07.318Z",
+    "updatedAt": "2025-05-24T19:26:07.318Z"
   }
 ]

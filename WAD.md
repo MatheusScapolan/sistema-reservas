@@ -577,9 +577,372 @@ Para Cleber, que "ama usar as salas de reunião" e busca eficiência, a capacida
 
 *Posicione aqui algumas imagens demonstrativas de seu protótipo de alta fidelidade e o link para acesso ao protótipo completo (mantenha o link sempre público para visualização).*
 
-### 3.6. WebAPI e endpoints (Semana 05)
+### 3.6. WebAPI e endpoints 
 
-*Utilize um link para outra página de documentação contendo a descrição completa de cada endpoint. Ou descreva aqui cada endpoint criado para seu sistema.*  
+## 3.6.1 Arquitetura:
+
+Nesta seção, é apresentada a arquitetura Model-View-Controller (MVC) adotada para o desenvolvimento do sistema de Reserva de Salas do INTELI. A escolha por esta arquitetura foi fundamentada na sua capacidade de promover a separação de responsabilidades, facilitando a manutenção, escalabilidade e organização do código. O diagrama a seguir ilustra a estrutura implementada, detalhando os componentes e o fluxo de interação entre eles.
+
+<div align="center">
+<sub>Figura 10 - Diagrama de Arquitetura MVC - Sistema de Reserva de Salas INTELI
+<br>
+<br>
+  
+![Figura  - Diagrama de Arquitetura MVC - Sistema de Reserva de Salas INTELI](./assets/diagrama_mvc/diagrama_mvc.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+**Código Usado no Mermaid:** 
+
+```text
+graph TD
+    %% Definição dos estilos
+    classDef model fill:#f9d5e5,stroke:#333,stroke-width:1px
+    classDef view fill:#d5f9e5,stroke:#333,stroke-width:1px
+    classDef controller fill:#d5e5f9,stroke:#333,stroke-width:1px
+    classDef database fill:#e5d5f9,stroke:#333,stroke-width:1px
+    classDef client fill:#f9e5d5,stroke:#333,stroke-width:1px
+
+    %% Cliente/Usuário
+    Client[Cliente/Navegador] --> |HTTP Requests| Server
+    
+    %% Servidor Express
+    Server[Servidor Express] --> Routes
+    
+    %% Rotas
+    Routes --> WebRoutes[Web Routes]
+    Routes --> ApiRoutes[API Routes]
+    
+    %% Rotas Web
+    WebRoutes --> |Renderiza Views| Views
+    WebRoutes --> |Chama| Controllers
+    
+    %% Rotas API
+    ApiRoutes --> |Chama| Controllers
+    
+    %% Controllers
+    Controllers --> RoomController[Room Controller]
+    Controllers --> BookingController[Booking Controller]
+    Controllers --> AuthController[Auth Controller]
+    Controllers --> BookingHistoryController[Booking History Controller]
+    
+    %% Models
+    Database[Database.js] --> |Gerencia| Models
+    Models --> RoomManager[Room Manager]
+    Models --> BookingManager[Booking Manager]
+    Models --> UserManager[User Manager]
+    
+    %% Interação Controllers-Models
+    RoomController --> |Usa| RoomManager
+    BookingController --> |Usa| BookingManager
+    BookingController --> |Usa| RoomManager
+    AuthController --> |Usa| UserManager
+    BookingHistoryController --> |Usa| BookingManager
+    
+    %% Persistência de Dados
+    RoomManager --> |Lê/Escreve| RoomsJSON[rooms.json]
+    BookingManager --> |Lê/Escreve| BookingsJSON[bookings.json]
+    UserManager --> |Lê/Escreve| UsersJSON[users.json]
+    
+    %% Views
+    Views --> IndexView[index.ejs]
+    Views --> RoomsView[rooms.ejs]
+    Views --> BookingsView[bookings.ejs]
+    Views --> HistoryView[history.ejs]
+    Views --> LoginView[login.ejs]
+    Views --> RegisterView[register.ejs]
+    Views --> ProfileView[profile.ejs]
+    Views --> BookingCreateView[booking-create.ejs]
+    Views --> BookingDetailsView[booking-details.ejs]
+    Views --> RoomDetailsView[room-details.ejs]
+    
+    %% Middlewares
+    Middlewares[Middlewares] --> AuthMiddleware[auth.js]
+    WebRoutes --> |Usa| AuthMiddleware
+    ApiRoutes --> |Usa| AuthMiddleware
+
+    %% Aplicar estilos
+    class Client client
+    class Server,Routes,WebRoutes,ApiRoutes controller
+    class Controllers,RoomController,BookingController,AuthController,BookingHistoryController controller
+    class Database,Models,RoomManager,BookingManager,UserManager model
+    class RoomsJSON,BookingsJSON,UsersJSON database
+    class Views,IndexView,RoomsView,BookingsView,HistoryView,LoginView,RegisterView,ProfileView,BookingCreateView,BookingDetailsView,RoomDetailsView view
+    class Middlewares,AuthMiddleware controller
+```
+
+---
+
+**Contextualização da Arquitetura MVC no Projeto**
+
+A arquitetura MVC é um padrão de design amplamente utilizado no desenvolvimento de aplicações web. Sua estrutura divide a aplicação em três componentes principais interconectados: Model (Modelo), View (Visão) e Controller (Controlador). 
+
+No contexto do sistema de Reserva de Salas, essa separação é particularmente uma ótima opção. O **Model** é responsável pela representação dos dados e pela lógica de negócios associada a eles, interagindo diretamente com o banco de dados PostgreSQL no Supabase. Ele encapsula as regras de manipulação de dados para entidades como Usuários, Salas e Reservas.
+
+A **View**, implementada com EJS (Embedded JavaScript templates), é responsável pela apresentação dos dados ao usuário e pela interface com a qual ele interage. Ela recebe os dados processados pelo Controller e os renderiza de forma compreensível no navegador do cliente.
+
+O **Controller**, por sua vez, atua como intermediário entre o Model e a View. Ele recebe as requisições do usuário (originadas nas Views), processa essas requisições invocando a lógica apropriada nos Models, e seleciona a View adequada para apresentar a resposta ao usuário. 
+
+Essa estrutura modular permite que alterações em um componente tenham impacto mínimo nos outros, promovendo um desenvolvimento mais ágil e organizado.
+
+---
+
+**Desenvolvimento e Fluxo de Interação**
+
+O fluxo de interação no sistema de Reserva de Salas, conforme representado no diagrama abaixo, inicia-se com a ação do usuário no **Cliente** (navegador web). Uma requisição HTTP é enviada ao **Servidor** (Node.js com Express). O roteador do Express direciona a requisição para o **Controller** apropriado (ex: `BookingController` para uma nova reserva).
+
+O Controller interpreta a requisição, valida os dados de entrada e interage com os **Models** correspondentes (ex: `Booking` model) para realizar operações no banco de dados (ex: verificar disponibilidade, inserir nova reserva). 
+
+Os Models executam as operações necessárias no **Banco de Dados (PostgreSQL)** e retornam os resultados (ou status) ao Controller. Com base nesse retorno, o Controller seleciona a **View** adequada (ex: uma página de confirmação ou a lista atualizada de reservas) e envia os dados necessários para ela.
+
+A View, utilizando EJS, renderiza a página HTML final com os dados fornecidos. Essa página é então enviada como resposta HTTP de volta ao Cliente, que a exibe para o usuário. Este ciclo se repete para cada interação do usuário com o sistema, garantindo uma comunicação clara e organizada entre as camadas.
+
+---
+
+**Conclusão da Implementação Arquitetural**
+
+A adoção da arquitetura MVC demonstrou ser uma decisão acertada para o desenvolvimento do sistema de Reserva de Salas. A separação clara entre a lógica de dados (Model), a apresentação (View) e o controle de fluxo (Controller) resultou em um código mais organizado, legível e de fácil manutenção.
+
+Foi possível desenvolver e testar cada componente de forma relativamente independente, agilizando o processo. A estrutura facilitou a identificação e correção de erros, bem como a implementação de novas funcionalidades. Observou-se que a comunicação bem definida entre as camadas, gerenciada pelos Controllers, minimizou o acoplamento entre os componentes, tornando o sistema mais robusto e flexível a futuras modificações ou expansões, como a integração com outros sistemas do INTELI ou a adição de novos tipos de recursos e regras de reserva.
+
+## 3.6.2 WebAPI e Endpoints:
+
+Nesta seção, são descritos detalhadamente os endpoints da WebAPI desenvolvida para o sistema de Reserva de Salas do INTELI. A API foi projetada seguindo os princípios RESTful, utilizando JSON como formato de intercâmbio de dados e verbos HTTP padrão para representar as operações sobre os recursos. A estruturação dos endpoints busca oferecer uma interface clara e consistente para a interação programática com as funcionalidades do sistema, como gerenciamento de usuários, salas e reservas.
+
+---
+
+**Contextualização e Design da API**
+
+A API foi concebida como o núcleo de comunicação entre o frontend (ou qualquer outro cliente) e a lógica de negócios do sistema. Foi dada atenção à segurança, com a implementação de autenticação baseada em JSON Web Tokens (JWT) para proteger rotas sensíveis e garantir que apenas usuários autorizados possam realizar determinadas operações. A organização dos endpoints foi feita por recurso (usuários, salas, reservas, autenticação), facilitando a compreensão e o uso da API. A seguir, cada conjunto de endpoints é apresentado com sua respectiva funcionalidade, método HTTP, URL, parâmetros esperados e exemplos de respostas.
+
+---
+
+#### Endpoints de Autenticação (`/api/auth`)
+
+Estes endpoints são responsáveis pelo registro, login e gerenciamento de sessão dos usuários.
+
+- **`POST /api/auth/register`**  
+  Endpoint utilizado para o registro de um novo usuário no sistema. Espera-se que o corpo da requisição contenha os dados do usuário (nome completo, email institucional, senha).  
+  **Argumentação:** A criação de usuários é fundamental para o acesso ao sistema. Este endpoint permite a auto-inscrição, facilitando a adoção da plataforma.
+
+- **`POST /api/auth/login`**  
+  Destinado à autenticação de usuários existentes. Requer email institucional e senha. Se válidos, um token JWT é gerado.  
+  **Argumentação:** Autenticação segura com JWT garante sessões stateless apropriadas para APIs REST.
+
+- **`GET /api/auth/verify`**  
+  Verifica a validade do token JWT enviado no cabeçalho de autorização.  
+  **Argumentação:** Útil para o cliente verificar se a sessão está ativa.
+
+- **`GET /api/auth/profile`**  
+  Retorna os dados do perfil do usuário autenticado.  
+  **Argumentação:** Permite ao frontend exibir informações personalizadas do usuário.
+
+- **`PUT /api/auth/profile`**  
+  Atualiza os dados de perfil do usuário autenticado.  
+  **Argumentação:** Oferece ao usuário controle sobre suas informações.
+
+---
+
+#### Endpoints de Usuários (`/api/users`)
+
+Gerenciam operações CRUD para os usuários. Alguns endpoints podem ser restritos a administradores.
+
+- **`POST /api/users`**  
+  Criação de usuários por administradores.  
+  **Argumentação:** Permite criação manual de contas.
+
+- **`GET /api/users`**  
+  Lista todos os usuários.  
+  **Argumentação:** Essencial para administração da plataforma.
+
+- **`GET /api/users/:id`**  
+  Detalhes de um usuário específico.  
+  **Argumentação:** Permite consulta detalhada.
+
+- **`PUT /api/users/:id`**  
+  Atualização de dados de usuário.  
+  **Argumentação:** Necessário para manutenção.
+
+- **`DELETE /api/users/:id`**  
+  Remoção de usuário.  
+  **Argumentação:** Permite gestão de contas.
+
+---
+
+#### Endpoints de Salas (`/api/rooms`)
+
+Gerenciam informações sobre as salas disponíveis.
+
+- **`GET /api/rooms`**  
+  Lista todas as salas.  
+  **Argumentação:** Ajuda na escolha de sala.
+
+- **`GET /api/rooms/:id`**  
+  Detalhes de uma sala.  
+  **Argumentação:** Consulta aprofundada.
+
+- **`GET /api/rooms/capacity`**  
+  Filtra salas por capacidade (`?min=10&max=20`).  
+  **Argumentação:** Facilita busca por tamanho.
+
+- **`GET /api/rooms/resources`**  
+  Filtra salas por recursos (`?tv=true&whiteboard=false`).  
+  **Argumentação:** Busca por recursos específicos.
+
+- **`POST /api/rooms`**  
+  Criação de nova sala (requer admin).  
+  **Argumentação:** Adição de espaços.
+
+- **`PUT /api/rooms/:id`**  
+  Atualização de sala (requer admin).  
+  **Argumentação:** Correção de dados.
+
+- **`DELETE /api/rooms/:id`**  
+  Remoção de sala (requer admin).  
+  **Argumentação:** Gestão de disponibilidade.
+
+---
+
+#### Endpoints de Reservas (`/api/bookings`)
+
+Gerenciam criação, consulta e modificação de reservas (autenticação obrigatória).
+
+- **`POST /api/bookings`**  
+  Criação de reserva.  
+  **Argumentação:** Funcionalidade central do sistema.
+
+- **`GET /api/bookings`**  
+  Lista de reservas (do usuário ou todas, se admin).  
+  **Argumentação:** Visualização do histórico.
+
+- **`GET /api/bookings/check-availability`**  
+  Verifica disponibilidade (`room_id`, `date`, `start`, `end`).  
+  **Argumentação:** Evita conflitos.
+
+- **`GET /api/bookings/user/:user_id`**  
+  Reservas de um usuário.  
+  **Argumentação:** Consulta personalizada.
+
+- **`GET /api/bookings/room/:room_id`**  
+  Reservas de uma sala.  
+  **Argumentação:** Visualização de ocupação.
+
+- **`GET /api/bookings/date/:date`**  
+  Reservas por data (`YYYY-MM-DD`).  
+  **Argumentação:** Agenda diária.
+
+- **`GET /api/bookings/:id`**  
+  Detalhes de uma reserva.  
+  **Argumentação:** Consulta específica.
+
+- **`PUT /api/bookings/:id`**  
+  Atualização de reserva.  
+  **Argumentação:** Modificações pós-criação.
+
+- **`PATCH /api/bookings/:id/status`**  
+  Atualiza o status da reserva.  
+  **Argumentação:** Confirmação ou cancelamento.
+
+- **`DELETE /api/bookings/:id`**  
+  Remove uma reserva.  
+  **Argumentação:** Cancelamento definitivo.
+
+---
+
+**Conclusão sobre a WebAPI**
+
+A API RESTful desenvolvida fornece um conjunto abrangente e estruturado de endpoints para suportar todas as funcionalidades previstas para o sistema de Reserva de Salas. A separação por recursos, o uso de métodos HTTP padrão e a implementação de autenticação JWT contribuem para uma API robusta, segura e de fácil utilização, tanto pelo frontend da aplicação quanto por potenciais integrações futuras.
+
+
+## 3.6.3 Configuração do Banco de Dados 
+
+## Documentação Técnica: Configuração, Migrações e Testes - Sistema de Reservas INTELI
+
+Este documento descreve os procedimentos técnicos para a configuração do ambiente, inicialização da estrutura do banco de dados e teste da API RESTful do projeto `sistema-reservas`.
+
+## 1. Configuração do Banco de Dados (PostgreSQL)
+
+A aplicação requer conexão com um banco de dados PostgreSQL, configurada por meio de variáveis de ambiente.
+
+1.  **Pré-requisito:** É necessário que um servidor PostgreSQL esteja instalado e acessível no ambiente de execução (seja localmente, via Docker ou em um serviço de nuvem (Supabase)).
+2.  **Criação do Banco de Dados:** Um banco de dados dedicado deve ser criado na instância PostgreSQL. O comando `psql` a seguir exemplifica a criação:
+    ```sql
+    CREATE DATABASE <nome_do_banco_de_dados>;
+    ```
+    Onde `<nome_do_banco_de_dados>` deve ser substituído pelo nome definido para o banco da aplicação.
+3.  **Arquivo de Variáveis de Ambiente (`.env`):** Na raiz do diretório do projeto (`/home/ubuntu/sistema-reservas/sistema-reservas/`), é necessária a criação de um arquivo denominado `.env`. Este arquivo conterá as credenciais e parâmetros de conexão. As variáveis de ambiente esperadas, conforme utilizadas pelo script `init-db.js`, são:
+
+    ```dotenv
+    # Configuração do Banco de Dados PostgreSQL
+    DB_USER=<usuario_postgres>
+    DB_HOST=<host_do_servidor_postgres>
+    DB_DATABASE=<nome_do_banco_de_dados>
+    DB_PASSWORD=<senha_do_usuario_postgres>
+    DB_PORT=<porta_do_servidor_postgres> # Padrão: 5432
+    DB_SSL=false # Definir como 'true' se a conexão exigir SSL
+
+    # Segredos da Aplicação
+    SESSION_SECRET=<segredo_para_gerenciamento_de_sessao>
+    JWT_SECRET=<segredo_para_assinatura_de_tokens_jwt>
+    ```
+
+    Os valores entre `<...>` devem ser substituídos pelas informações correspondentes ao ambiente PostgreSQL configurado. A correta nomeação das variáveis é crucial para o funcionamento da aplicação.
+
+4.  **Instalação das Dependências:** A partir do diretório raiz do projeto (`/home/ubuntu/sistema-reservas/sistema-reservas`) via terminal, as dependências Node.js são instaladas com o comando:
+    ```bash
+    npm install
+    ```
+    Este comando processa o arquivo `package.json` e instala os pacotes necessários, como `pg` e `dotenv`.
+
+5.  **Verificação da Conexão:** A validação da configuração do banco de dados pode ser realizada executando o script `init-db`, definido no `package.json`:
+    ```bash
+    npm run init-db
+    ```
+    A exibição da mensagem "✅ Conectado ao banco de dados!" no console indica sucesso na conexão. Erros nesta etapa geralmente apontam para credenciais incorretas no arquivo `.env` ou problemas de acessibilidade ao servidor PostgreSQL.
+
+## 2. Inicialização da Estrutura do Banco (Migração Manual)
+
+A definição da estrutura do banco de dados (tabelas, índices, funções, triggers) é fornecida através de um script SQL, não utilizando um sistema de migração versionado.
+
+1.  **Localização do Script DDL:** O script contendo as instruções Data Definition Language (DDL) encontra-se em `/home/ubuntu/sistema-reservas/sistema-reservas/scripts/int.sql`.
+2.  **Aplicação do Script:** O conteúdo integral do arquivo `int.sql` deve ser executado no banco de dados criado anteriormente (`<nome_do_banco_de_dados>`). Isso pode ser feito utilizando uma ferramenta cliente de PostgreSQL (psql, pgAdmin, DBeaver, etc.).
+    *   **Exemplo de execução via `psql`:**
+        ```bash
+        psql -h <host_do_servidor_postgres> -p <porta_do_servidor_postgres> -U <usuario_postgres> -d <nome_do_banco_de_dados> -f /home/ubuntu/sistema-reservas/sistema-reservas/scripts/int.sql
+        ```
+        Os parâmetros devem ser substituídos pelos valores corretos do ambiente.
+3.  **Verificação da Estrutura:** Após a execução bem-sucedida do script, deve-se verificar a existência das tabelas (`users`, `rooms`, `bookings`, `booking_history`) e demais objetos (índices, funções, triggers) no banco de dados, conforme definido no script `int.sql`.
+
+## 3. Teste da API RESTful
+
+A validação funcional dos endpoints da API pode ser realizada por meio dos seguintes métodos:
+
+1.  **Teste Manual via Cliente REST:**
+    *   O arquivo `/home/ubuntu/sistema-reservas/sistema-reservas/rest.http` provê exemplos de requisições HTTP formatadas para interação com a API.
+    *   **Procedimento:**
+        *   Utilizar uma ferramenta ou extensão de cliente REST (ex: "REST Client" para VS Code).
+        *   Manter o servidor da aplicação em execução (iniciado com `npm start` no diretório do projeto, tipicamente ouvindo em `http://localhost:3000`).
+        *   Abrir o arquivo `rest.http` na ferramenta cliente.
+        *   Enviar as requisições individualmente.
+        *   **Fluxo de Autenticação:** Para endpoints protegidos, é necessário primeiro obter um JSON Web Token (JWT) através do endpoint de login (`POST /api/auth/login`, após registrar um usuário com `POST /api/auth/register`). O token obtido deve ser incluído no cabeçalho `Authorization` das requisições subsequentes, no formato `Bearer <token>`.
+
+2.  **Scripts de Teste (`test-*.js`):**
+    *   O projeto inclui os arquivos `/home/ubuntu/sistema-reservas/sistema-reservas/test-api.js` e `/home/ubuntu/sistema-reservas/sistema-reservas/test-endpoints.js`.
+    *   **Considerações:** O arquivo `package.json` não contém scripts específicos para execução automatizada destes arquivos, nem dependências de frameworks de teste padrão (Jest, Mocha, etc.). O propósito e o método de execução exatos destes scripts não estão explicitamente documentados no projeto.
+    *   **Execução Manual (Potencial):** Pode-se tentar a execução direta via Node.js:
+        ```bash
+        node /home/ubuntu/sistema-reservas/sistema-reservas/test-api.js
+        node /home/ubuntu/sistema-reservas/sistema-reservas/test-endpoints.js
+        ```
+        A análise da saída no console é necessária para interpretar os resultados.
+
+3.  **Teste via Interface Web (Frontend EJS):**
+    *   Com o servidor em execução (`npm start`), a aplicação pode ser acessada através de um navegador web no endereço `http://localhost:3000`.
+    *   A interação com as funcionalidades através das páginas renderizadas (Login, Cadastro, Reserva de Salas, etc.) permite testar a integração entre o frontend e o backend (API).
+
+Para uma validação completa, recomenda-se a combinação de testes manuais da API (utilizando `rest.http`) e testes funcionais através da interface web.
 
 ### 3.7 Interface e Navegação (Semana 07)
 

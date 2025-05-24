@@ -1,0 +1,55 @@
+<%- include('./partials/header') %>
+
+<div class="container mt-4">
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+  <% if (message && message.length > 0) { %>
+    <div class="alert alert-success" role="alert">
+      <%= message %>
+    </div>
+  <% } %>
+  
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Salas Disponíveis</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <% if (rooms && rooms.length > 0) { %>
+      <% rooms.forEach(room => { %>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0"><%= room.name %></h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Código:</strong> <%= room.code %></p>
+              <p><strong>Capacidade:</strong> <%= room.capacity %> pessoas</p>
+              <p><strong>Localização:</strong> <%= room.location %></p>
+              <p><strong>Recursos:</strong> <%= room.resources %></p>
+              <% if (room.description) { %>
+                <p><strong>Descrição:</strong> <%= room.description %></p>
+              <% } %>
+            </div>
+            <div class="card-footer">
+              <a href="/rooms/<%= room.id %>" class="btn btn-info">Detalhes</a>
+              <a href="/bookings/create?roomId=<%= room.id %>" class="btn btn-primary">Reservar</a>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="col-12">
+        <div class="alert alert-info">
+          Nenhuma sala disponível no momento.
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

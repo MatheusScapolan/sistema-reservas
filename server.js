@@ -1,15 +1,65 @@
+// server.js
 const express = require('express');
+const session = require('express-session');
+const flash = require('connect-flash');
+const path = require('path');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+// Importar rotas
+const authRoutes = require('./routes/authRoutes');
+const roomRoutes = require('./routes/roomRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const webRoutes = require('./routes/webRoutes');
+
+// Inicializar o app Express
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware para processar JSON
-app.use(express.json());
+// Configurações do middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Rotas
-const routes = require('./routes/index');
-app.use('/', routes);
+// Configuração da sessão
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'inteli-reservas-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 horas
+  }
+}));
 
-// Inicializa o servidor
+// Configuração do flash messages
+app.use(flash());
+
+// Configuração do EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Rotas da API
+app.use('/api/auth', authRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/bookings', bookingRoutes);
+
+// Rotas web
+app.use('/', webRoutes);
+
+// Middleware de tratamento de erros
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: 'Erro interno do servidor'
+  });
+});
+
+// Iniciar o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
+module.exports = app;

@@ -1,0 +1,48 @@
+<%- include('./partials/header') %>
+
+<div class="container mt-4">
+  <% if (message && message.length > 0) { %>
+    <div class="alert alert-success" role="alert">
+      <%= message %>
+    </div>
+  <% } %>
+
+  <div class="jumbotron">
+    <h1 class="display-4">Bem-vindo ao Sistema de Reservas INTELI</h1>
+    <p class="lead">Este sistema foi desenvolvido para facilitar o gerenciamento e agendamento de salas no Instituto de Tecnologia e Liderança (INTELI). Através desta plataforma, você pode visualizar a disponibilidade das salas, fazer reservas e consultar seu histórico de agendamentos.</p>
+    <hr class="my-4">
+    <p>O sistema de reservas do INTELI foi projetado para otimizar a utilização dos espaços compartilhados, garantindo que todos os alunos e professores possam agendar salas de forma eficiente e transparente. Nossa interface intuitiva permite que você encontre rapidamente o espaço ideal para suas necessidades, verifique a disponibilidade em tempo real e faça reservas com apenas alguns cliques.</p>
+    
+    <div class="row mt-5">
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Consultar Salas</h5>
+            <p class="card-text">Visualize todas as salas disponíveis no INTELI, com informações detalhadas sobre capacidade, recursos disponíveis e localização. Você pode filtrar as salas de acordo com suas necessidades específicas para encontrar o espaço perfeito para suas atividades.</p>
+            <a href="/rooms" class="btn btn-primary">Ver Salas</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Minhas Reservas</h5>
+            <p class="card-text">Acesse todas as suas reservas atuais e futuras. Você pode gerenciar seus agendamentos, verificar detalhes como data, horário e duração, além de poder cancelar reservas quando necessário. O sistema mantém tudo organizado para você.</p>
+            <a href="/bookings" class="btn btn-primary">Ver Reservas</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Meu Perfil</h5>
+            <p class="card-text">Gerencie suas informações pessoais, atualize seu nome, email ou senha. Mantenha seus dados sempre atualizados para garantir o melhor funcionamento do sistema e receber notificações importantes sobre suas reservas.</p>
+            <a href="/profile" class="btn btn-primary">Ver Perfil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

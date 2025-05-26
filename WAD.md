@@ -568,14 +568,217 @@ A tela de "Modificação de Reserva" é particularmente relevante para Cleber, p
 
 Para Cleber, que "ama usar as salas de reunião" e busca eficiência, a capacidade de modificar uma reserva de forma descomplicada e transparente é um diferencial importante, tornando o sistema mais útil, adaptado às suas necessidades reais como estudante do INTELI e reforçando a percepção de um sistema estruturado e confiável.
 
-### 3.4. Guia de estilos (Semana 05)
+### 3.4. Guia de estilos
 
-*Descreva aqui orientações gerais para o leitor sobre como utilizar os componentes do guia de estilos de sua solução.*
+Este guia de estilos documenta os padrões visuais e de interface utilizados no desenvolvimento do protótipo de alta fidelidade para o Sistema de Reservas de Salas do INTELI. O objetivo é garantir a consistência visual, a usabilidade e o alinhamento com a identidade da marca INTELI em todas as telas e interações da aplicação. As diretrizes aqui apresentadas devem ser seguidas para futuras implementações e manutenções no sistema, assegurando uma experiência de usuário coesa e profissional.
+
+**Layout Geral**
+
+O layout da aplicação foi estruturado para oferecer clareza e facilidade de navegação. Adota-se um design limpo, com amplo uso de espaço em branco para separar visualmente os elementos e melhorar a legibilidade. O conteúdo principal é geralmente centralizado ou contido dentro de seções bem definidas, utilizando cards com cantos arredondados e sombras sutis para agrupar informações relacionadas, como visto nas telas de listagem de salas e reservas. As margens e espaçamentos seguem um padrão consistente para criar um ritmo visual equilibrado. O cabeçalho e o rodapé são fixos em algumas visualizações, proporcionando acesso constante à navegação principal e informações institucionais. A estrutura geral busca adaptabilidade, embora a análise detalhada de responsividade não tenha sido o foco nesta fase de prototipagem.
+
+**Tipografia**
+
+A tipografia desempenha um papel crucial na hierarquia visual e na legibilidade da interface, seguindo as diretrizes do Manual da Marca INTELI. Duas fontes principais são empregadas:
+
+1.  **Space Mono Bold:** Utilizada para títulos principais (H1, H2), chamadas de destaque e elementos que necessitam de maior ênfase visual, como o título "Bem-vindo ao Sistema de Reservas INTELI" na tela inicial ou os nomes das salas nos cards. Sua natureza monoespaçada e peso bold conferem um caráter moderno e tecnológico, alinhado à identidade do INTELI.
+2.  **Manrope Normal:** Empregada para todo o texto corrido, descrições, labels de formulários, itens de menu, texto de botões e informações complementares. Sua excelente legibilidade em diversos tamanhos e pesos garante conforto na leitura de conteúdos mais extensos e clareza em elementos de interface.
+
+Os tamanhos e pesos das fontes variam para estabelecer a hierarquia visual. Títulos principais são maiores e em bold (Space Mono), enquanto subtítulos e textos descritivos utilizam tamanhos menores e peso regular (Manrope). Labels e textos de botões também utilizam Manrope, geralmente em peso regular ou semi-bold, com tamanho adequado para leitura e interação.
+
+**Cores**
+
+A paleta de cores é fundamental para a identidade visual do sistema e segue o Manual da Marca INTELI, complementada por cores funcionais para estados e feedback.
+
+*   **Cores Primárias (INTELI):**
+    *   **Roxo Inteli (#2e2640):** Amplamente utilizado em fundos principais, cabeçalhos e rodapés, conferindo sobriedade e identidade visual marcante.
+    *   **Coral Inteli (#ff4545):** Cor de destaque principal, usada em botões de ação primária (Call-to-Action) como "Reservar Agora", "Entrar", "Nova Reserva", e para indicar o item ativo na navegação principal.
+    *   **Lilás Inteli (#855ede):** Utilizado em elementos gráficos de apoio e ícones, como visto nos cards da tela principal.
+    *   **Azul Inteli (#1426ab):** Aplicado em botões primários alternativos (como "Atualizar Perfil", "Reservar Sala") e em cabeçalhos de seções dentro de cards, oferecendo um contraste forte e profissional.
+    *   **Cinza Inteli (#cccfd1):** Usado para bordas sutis, divisores e fundos de elementos secundários.
+*   **Cores Secundárias (INTELI):**
+    *   **Laranja Inteli (#ff8245):** Pode ser usado para alertas ou destaques secundários (não proeminente nas telas fornecidas).
+    *   **Cinza Escuro Inteli (#878a96):** Utilizado para texto secundário, descrições e placeholders, garantindo legibilidade sem competir com informações primárias.
+    *   **Violeta Inteli (#4a17ab):** Cor de apoio para elementos gráficos ou fundos secundários.
+    *   **Azul Royal Inteli (#124aed):** Aplicado em ícones e elementos gráficos, como nos cards da tela principal.
+*   **Cores Neutras:**
+    *   **Branco (#FFFFFF):** Usado extensivamente para texto sobre fundos escuros (Roxo, Azul) e como fundo principal de cards e seções de conteúdo, proporcionando contraste e clareza.
+    *   **Preto/Cinzas Escuros:** Utilizados para texto principal sobre fundos claros.
+*   **Cores Funcionais/Status:**
+    *   **Verde:** Utilizado para indicar status positivos como "Disponível" e "Confirmada" (e.g., `#28a745` ou similar).
+    *   **Vermelho:** Utilizado para indicar status de alerta ou negativo como "Ocupada" e em botões de ação destrutiva como "Cancelar" ou "Apagar Histórico" (e.g., `#dc3545` ou similar).
+    *   **Azul Claro:** Usado como fundo para caixas de informação ou dicas, como nas "Regras de Reserva".
+
+**Botões**
+
+Os botões são componentes essenciais de interação e seguem um padrão visual claro para indicar sua função e hierarquia:
+
+*   **Botões Primários:** Apresentam fundo sólido utilizando as cores Coral Inteli (#ff4545) ou Azul Inteli (#1426ab), com texto em branco (Manrope). Possuem cantos arredondados e, frequentemente, incluem um ícone à direita (como uma seta) para reforçar a ação. São usados para as ações mais importantes da tela (e.g., "Reservar Agora", "Entrar", "Salvar").
+*   **Botões Secundários:** Possuem fundo branco, borda sólida (geralmente Cinza Escuro ou Coral para ações destrutivas como "Cancelar") e texto na cor da borda ou em Cinza Escuro. Também apresentam cantos arredondados. São utilizados para ações alternativas ou menos prioritárias (e.g., "Detalhes", "Ver Salas", "Cancelar").
+*   **Botões Terciários/Links:** Apresentados como texto simples, geralmente na cor Azul Inteli ou Lilás Inteli, para ações como "Esqueci minha senha" ou navegação secundária. Podem ter um sublinhado no estado de hover (não visível nas imagens estáticas).
+
+É crucial definir e implementar os estados visuais para todos os botões (normal, hover, pressionado, desabilitado) para fornecer feedback adequado ao usuário durante a interação.
+
+**Assets**
+
+Os assets visuais complementam a interface e reforçam a identidade da marca:
+
+*   **Logotipo INTELI:** Aplicado de forma consistente no cabeçalho principal e em telas de autenticação (Login, Cadastro, Logout), seguindo as diretrizes de aplicação do manual da marca quanto a espaçamento e contraste com o fundo.
+*   **Ícones:** Utiliza-se um conjunto de ícones de estilo limpo e consistente para representar ações e informações visualmente (e.g., ícones de usuário, logout, calendário, relógio, localização, recursos de sala, olho, lixeira, mais, setas). O estilo parece alinhado com bibliotecas de ícones modernas e sólidas (como Font Awesome ou Material Icons), garantindo reconhecimento e clareza. Ícones circulares coloridos (com fundos Coral, Lilás, Azul Royal) são usados na tela principal para destacar funcionalidades.
+*   **Grafismos:** Um padrão sutil de pontos (dot pattern) é aplicado sobre fundos escuros (Roxo Inteli) em algumas telas (Principal, Login), adicionando textura visual sem comprometer a legibilidade, conforme sugerido no manual da marca para uso sutil de grafismos.
+
+Este guia fornece a base para a construção e evolução da interface do Sistema de Reservas de Salas INTELI, promovendo uma experiência de usuário consistente, agradável e alinhada à identidade visual da instituição.
 
 
 ### 3.5. Protótipo de alta fidelidade (Semana 05)
 
-*Posicione aqui algumas imagens demonstrativas de seu protótipo de alta fidelidade e o link para acesso ao protótipo completo (mantenha o link sempre público para visualização).*
+A seguir é apresentado as telas que compõem o protótipo de alta fidelidade do Sistema de Reservas de Salas do INTELI. Este protótipo reflete visualmente as funcionalidades e fluxos de interação definidos nas etapas anteriores do projeto, aplicando os padrões visuais estabelecidos no Guia de Estilos (seção 3.4) e alinhando-se à identidade visual do INTELI. As imagens estão organizadas para demonstrar os principais fluxos de navegação do usuário, desde o acesso inicial até a gestão de reservas e perfil.
+
+**Fluxo Principal e Telas:**
+
+1.  **Tela de Login:** Ponto de entrada para usuários existentes acessarem o sistema.
+
+<div align="center">
+<sub>Figura 10 - Tela de Login
+<br>
+<br>
+  
+![Figura 10 - Tela de Login](./assets/prototipo_alta_fidelidade/tela_login.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+2.  **Tela de Cadastro:** Permite que novos usuários criem uma conta no sistema.
+
+<div align="center">
+<sub>Figura 11 - Tela Cadastro
+<br>
+<br>
+  
+![Figura 11 - Tela de Cadastro](./assets/prototipo_alta_fidelidade/tela_cadastro.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+3.  **Tela Principal (Parte 1 - Boas-vindas):** Primeira visualização após o login, apresentando o sistema e um acesso rápido à reserva.
+
+<div align="center">
+<sub>Figura 12 - Tela Principal 1
+<br>
+<br>
+  
+![Figura 12 - Tela de Principal 1](./assets/prototipo_alta_fidelidade/tela_principal_1.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+4.  **Tela Principal (Parte 2 - Funcionalidades):** Continuação da tela principal, destacando as principais funcionalidades: Consultar Salas, Ver Minhas Reservas e Ver Meu Perfil.
+
+<div align="center">
+<sub>Figura 13 - Tela Principal 2
+<br>
+<br>
+  
+![Figura 13 - Tela Principal 2](./assets/prototipo_alta_fidelidade/tela_principal_2.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+5.  **Tela de Salas Disponíveis:** Lista as salas disponíveis para reserva, com informações resumidas e opções de visualização de detalhes ou reserva direta.
+
+<div align="center">
+<sub>Figura 14 - Tela de Salas Disponíveis 
+<br>
+<br>
+  
+![Figura 14 - Tela de Login](./assets/prototipo_alta_fidelidade/tela_salas.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+6.  **Tela de Detalhes da Sala:** Exibe informações completas sobre uma sala específica, incluindo capacidade, recursos, descrição e disponibilidade.
+
+<div align="center">
+<sub>Figura 15 - Tela de Detalhes da Sala
+<br>
+<br>
+  
+![Figura 15 - Tela de Detalhes da Sala](./assets/prototipo_alta_fidelidade/tela_detalhes_sala.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+7.  **Tela de Reserva de Sala:** Formulário para o usuário realizar o agendamento de uma sala, especificando data, horário, finalidade e número de participantes.
+
+<div align="center">
+<sub>Figura 16 - Tela de Reserva de Sala
+<br>
+<br>
+  
+![Figura 16 - Tela de Reserva de Sala](./assets/prototipo_alta_fidelidade/tela_reserva_sala.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+8.  **Tela de Minhas Reservas:** Permite ao usuário visualizar suas reservas ativas e o histórico de reservas passadas, com opções para ver detalhes ou cancelar agendamentos.
+
+<div align="center">
+<sub>Figura 17 - Tela de Minhas Reservas
+<br>
+<br>
+  
+![Figura 17 - Tela de Minhas Reservas](./assets/prototipo_alta_fidelidade/tela_minhas_reservas.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+9.  **Tela de Detalhes da Reserva:** Apresenta todas as informações de uma reserva específica, tanto da reserva em si quanto da sala reservada.
+
+<div align="center">
+<sub>Figura 18 - Tela de Detalhes de Reserva
+<br>
+<br>
+  
+![Figura 18 - Tela de Detalhes de Reserva](./assets/prototipo_alta_fidelidade/tela_detalhes_reserva.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+10. **Tela de Perfil:** Área onde o usuário pode visualizar e atualizar suas informações pessoais e alterar sua senha.
+
+<div align="center">
+<sub>Figura 19 - Tela de Perfil
+<br>
+<br>
+  
+![Figura 19 - Tela de Perfil](./assets/prototipo_alta_fidelidade/tela_perfil.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+11. **Tela de Logout:** Confirmação visual de que o usuário está sendo desconectado do sistema.
+
+<div align="center">
+<sub>Figura 20 - Tela de Logout
+<br>
+<br>
+  
+![Figura 20 - Tela de Logout](./assets/prototipo_alta_fidelidade/tela_logout.png)
+  
+<sup>Fonte: Material produzido pelo autor (2025)
+</div>
+<br>
+
+Este conjunto de telas representa a interface visual final proposta para o sistema, servindo como guia para o desenvolvimento front-end e garantindo uma experiência de usuário consistente e alinhada aos objetivos do projeto e à identidade do INTELI.
 
 ### 3.6. WebAPI e endpoints 
 

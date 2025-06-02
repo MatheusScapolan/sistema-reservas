@@ -572,6 +572,9 @@ Para Cleber, que "ama usar as salas de reunião" e busca eficiência, a capacida
 
 Este guia de estilos documenta os padrões visuais e de interface utilizados no desenvolvimento do protótipo de alta fidelidade para o Sistema de Reservas de Salas do INTELI. O objetivo é garantir a consistência visual, a usabilidade e o alinhamento com a identidade da marca INTELI em todas as telas e interações da aplicação. As diretrizes aqui apresentadas devem ser seguidas para futuras implementações e manutenções no sistema, assegurando uma experiência de usuário coesa e profissional.
 
+Segue abaixo o link para vizualizar o Guia de Estilos do Projeto pelo Figma:
+https://www.figma.com/design/VBYW8IRVczYxLrPUcWJPzo/Guia-de-Estilos---Sistema-Reservas?node-id=0-1&t=x4IggeadPMbVCyHL-1
+
 **Layout Geral**
 
 O layout da aplicação foi estruturado para oferecer clareza e facilidade de navegação. Adota-se um design limpo, com amplo uso de espaço em branco para separar visualmente os elementos e melhorar a legibilidade. O conteúdo principal é geralmente centralizado ou contido dentro de seções bem definidas, utilizando cards com cantos arredondados e sombras sutis para agrupar informações relacionadas, como visto nas telas de listagem de salas e reservas. As margens e espaçamentos seguem um padrão consistente para criar um ritmo visual equilibrado. O cabeçalho e o rodapé são fixos em algumas visualizações, proporcionando acesso constante à navegação principal e informações institucionais. A estrutura geral busca adaptabilidade, embora a análise detalhada de responsividade não tenha sido o foco nesta fase de prototipagem.

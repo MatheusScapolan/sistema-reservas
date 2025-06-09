@@ -1,48 +1,707 @@
-<%- include('./partials/header') %>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reservas INTELI</title>
 
-<div class="container mt-4">
-  <% if (message && message.length > 0) { %>
-    <div class="alert alert-success" role="alert">
-      <%= message %>
-    </div>
-  <% } %>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <div class="jumbotron">
-    <h1 class="display-4">Bem-vindo ao Sistema de Reservas INTELI</h1>
-    <p class="lead">Este sistema foi desenvolvido para facilitar o gerenciamento e agendamento de salas no Instituto de Tecnologia e Liderança (INTELI). Através desta plataforma, você pode visualizar a disponibilidade das salas, fazer reservas e consultar seu histórico de agendamentos.</p>
-    <hr class="my-4">
-    <p>O sistema de reservas do INTELI foi projetado para otimizar a utilização dos espaços compartilhados, garantindo que todos os alunos e professores possam agendar salas de forma eficiente e transparente. Nossa interface intuitiva permite que você encontre rapidamente o espaço ideal para suas necessidades, verifique a disponibilidade em tempo real e faça reservas com apenas alguns cliques.</p>
-    
-    <div class="row mt-5">
-      <div class="col-md-4">
-        <div class="card mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Consultar Salas</h5>
-            <p class="card-text">Visualize todas as salas disponíveis no INTELI, com informações detalhadas sobre capacidade, recursos disponíveis e localização. Você pode filtrar as salas de acordo com suas necessidades específicas para encontrar o espaço perfeito para suas atividades.</p>
-            <a href="/rooms" class="btn btn-primary">Ver Salas</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Minhas Reservas</h5>
-            <p class="card-text">Acesse todas as suas reservas atuais e futuras. Você pode gerenciar seus agendamentos, verificar detalhes como data, horário e duração, além de poder cancelar reservas quando necessário. O sistema mantém tudo organizado para você.</p>
-            <a href="/bookings" class="btn btn-primary">Ver Reservas</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Meu Perfil</h5>
-            <p class="card-text">Gerencie suas informações pessoais, atualize seu nome, email ou senha. Mantenha seus dados sempre atualizados para garantir o melhor funcionamento do sistema e receber notificações importantes sobre suas reservas.</p>
-            <a href="/profile" class="btn btn-primary">Ver Perfil</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<%- include('./partials/footer') %>
+    <!-- INTELI Theme CSS -->
+    <link rel="stylesheet" href="/css/inteli-theme.css">
+
+    <!-- CSS customizado para homepage -->
+    <style>
+        body {
+            font-family: var(--font-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        .main-header {
+            background: var(--inteli-roxo);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .inteli-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .inteli-logo:hover {
+            text-decoration: none;
+            transform: scale(1.1);
+        }
+
+        .inteli-logo-img {
+            height: 50px;
+            width: auto;
+            /* Logo original com cores naturais */
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            font-family: var(--font-primary);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            color: var(--inteli-coral);
+        }
+
+        .nav-item:not(.active) {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-item:hover {
+            color: var(--inteli-coral);
+            cursor: pointer;
+        }
+
+        .nav-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-family: var(--font-primary);
+            font-size: 14px;
+        }
+
+        /* Dropdown do usuário */
+        .user-dropdown {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-dropdown:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            text-decoration: none;
+        }
+
+        .user-dropdown .dropdown-toggle::after {
+            margin-left: 8px;
+        }
+
+        .dropdown-menu {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .dropdown-item {
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            transform: translateX(4px);
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #fee;
+            color: #dc3545;
+        }
+
+        .dropdown-divider {
+            margin: 8px 0;
+            border-color: #e9ecef;
+        }
+
+        .login-btn {
+            background: var(--inteli-coral);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .login-btn:hover {
+            background: var(--inteli-azul);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--inteli-roxo) 0%, #4a3b7a 100%);
+            height: calc(100vh - 80px); /* Altura da tela menos o header */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Grafismo INTELI no fundo */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(255, 69, 69, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 30%, rgba(133, 94, 222, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 70%, rgba(255, 69, 69, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 90% 80%, rgba(133, 94, 222, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 10% 90%, rgba(255, 69, 69, 0.06) 0%, transparent 50%);
+            z-index: 1;
+        }
+
+        /* Pontos decorativos */
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(255, 69, 69, 0.4) 2px, transparent 2px),
+                radial-gradient(circle at 85% 35%, rgba(133, 94, 222, 0.4) 3px, transparent 3px),
+                radial-gradient(circle at 25% 75%, rgba(255, 69, 69, 0.3) 1px, transparent 1px),
+                radial-gradient(circle at 75% 85%, rgba(133, 94, 222, 0.3) 2px, transparent 2px),
+                radial-gradient(circle at 95% 15%, rgba(255, 69, 69, 0.2) 1px, transparent 1px),
+                radial-gradient(circle at 5% 65%, rgba(133, 94, 222, 0.2) 2px, transparent 2px);
+            background-size: 100px 100px, 150px 150px, 80px 80px, 120px 120px, 60px 60px, 90px 90px;
+            z-index: 1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-logo {
+            height: 100px;
+            width: auto;
+            margin-bottom: 25px;
+            /* Logo original com cores naturais */
+        }
+
+        .hero-title {
+            font-family: var(--font-secondary);
+            font-weight: 700;
+            font-size: 36px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .hero-description {
+            font-family: var(--font-primary);
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-button {
+            background: var(--inteli-coral);
+            border: none;
+            border-radius: 8px;
+            padding: 16px 32px;
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .hero-button:hover {
+            background: var(--inteli-azul);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 69, 69, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+
+
+        /* Features Section */
+        .features-section {
+            background: var(--inteli-branco);
+            padding: 80px 20px;
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-title {
+            font-family: var(--font-secondary);
+            font-weight: 700;
+            font-size: 32px;
+            color: var(--inteli-roxo);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .features-subtitle {
+            font-family: var(--font-primary);
+            font-size: 16px;
+            color: var(--inteli-cinza-escuro);
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .feature-icon.calendar {
+            background: var(--inteli-coral);
+        }
+
+        .feature-icon.users {
+            background: var(--inteli-lilas);
+        }
+
+        .feature-icon.user {
+            background: var(--inteli-azul);
+        }
+
+        .feature-title {
+            font-family: var(--font-secondary);
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--inteli-roxo);
+            margin-bottom: 15px;
+        }
+
+        .feature-description {
+            font-family: var(--font-primary);
+            font-size: 14px;
+            color: var(--inteli-cinza-escuro);
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .feature-button {
+            background: transparent;
+            border: 2px solid var(--inteli-cinza);
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--inteli-roxo);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .feature-button:hover {
+            border-color: var(--inteli-roxo);
+            background: var(--inteli-roxo);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Footer */
+        .main-footer {
+            background: var(--inteli-roxo);
+            color: white;
+            text-align: center;
+            padding: 20px 20px;
+        }
+
+        .footer-text {
+            font-family: var(--font-primary);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .footer-subtitle {
+            font-family: var(--font-primary);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-menu {
+                gap: 20px;
+            }
+
+            .hero-section {
+                height: calc(100vh - 70px);
+                padding: 20px 15px;
+            }
+
+            .hero-logo {
+                height: 80px;
+                margin-bottom: 20px;
+            }
+
+            .hero-title {
+                font-size: 28px;
+                margin-bottom: 15px;
+            }
+
+            .hero-description {
+                font-size: 14px;
+                margin-bottom: 25px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-section {
+                height: calc(100vh - 60px);
+                padding: 15px 10px;
+            }
+
+            .hero-logo {
+                height: 70px;
+                margin-bottom: 15px;
+            }
+
+            .hero-title {
+                font-size: 24px;
+                margin-bottom: 12px;
+            }
+
+            .hero-description {
+                font-size: 13px;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (min-height: 900px) {
+            .hero-logo {
+                height: 120px;
+                margin-bottom: 30px;
+            }
+
+            .hero-title {
+                font-size: 42px;
+                margin-bottom: 25px;
+            }
+
+            .hero-description {
+                font-size: 18px;
+                margin-bottom: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <a class="inteli-logo" href="/">
+                    <img src="/images/inteli-logo-branca-vermelha.png" alt="INTELI" class="inteli-logo-img">
+                </a>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item active" onclick="window.location.href='/'">
+                        <i class="fas fa-home"></i>
+                        Início
+                    </li>
+                    <li class="nav-item" onclick="window.location.href='/rooms'">
+                        <i class="fas fa-door-open"></i>
+                        Salas
+                    </li>
+                    <li class="nav-item" onclick="window.location.href='/bookings'">
+                        <i class="fas fa-calendar-check"></i>
+                        Reservas
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="user-section">
+                <% if (isAuthenticated) { %>
+                    <div class="dropdown">
+                        <button class="user-dropdown dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i>
+                            <span><%= user ? user.name.split(' ').slice(0, 2).join(' ') : 'Usuário' %></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user"></i>
+                                    Meu Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Sair
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                <% } else { %>
+                    <a href="/login" class="login-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Entrar
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <img src="/images/inteli-logo-branca-vermelha.png" alt="INTELI Logo" class="hero-logo">
+
+            <h1 class="hero-title">
+                Bem-vindo ao Sistema de<br>
+                Reservas INTELI
+            </h1>
+
+            <p class="hero-description">
+                Este sistema foi desenvolvido para facilitar o gerenciamento e agendamento de salas no Instituto
+                de Tecnologia e Liderança (INTELI). Através desta plataforma, você pode visualizar a
+                disponibilidade das salas, fazer reservas e consultar seu histórico de agendamentos.
+            </p>
+
+            <% if (isAuthenticated) { %>
+                <a href="/bookings/create" class="hero-button">
+                    Reservar Agora →
+                </a>
+            <% } else { %>
+                <a href="/register" class="hero-button">
+                    Reservar Agora →
+                </a>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="features-container">
+            <h2 class="features-title">Como Funciona</h2>
+            <p class="features-subtitle">
+                O sistema de reservas do INTELI foi projetado para otimizar a utilização dos
+                espaços compartilhados, garantindo que todos os alunos e professores possam
+                agendar salas de forma eficiente e transparente.
+            </p>
+
+            <div class="features-grid">
+                <!-- Feature 1: Consultar Salas -->
+                <div class="feature-card">
+                    <div class="feature-icon calendar">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Consultar Salas</h3>
+                    <p class="feature-description">
+                        Visualize todas as salas disponíveis no INTELI, com informações detalhadas sobre
+                        capacidade, recursos disponíveis e localização. Você pode filtrar as salas de
+                        acordo com suas necessidades.
+                    </p>
+                    <% if (isAuthenticated) { %>
+                        <a href="/rooms" class="feature-button">Ver Salas</a>
+                    <% } else { %>
+                        <a href="/login" class="feature-button">Ver Salas</a>
+                    <% } %>
+                </div>
+
+                <!-- Feature 2: Ver Minhas Reservas -->
+                <div class="feature-card">
+                    <div class="feature-icon users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="feature-title">Ver Minhas Reservas</h3>
+                    <p class="feature-description">
+                        Acesse todas as suas reservas atuais e futuras. Você pode gerenciar seus
+                        agendamentos, verificar detalhes como data, horário e duração ou até mesmo
+                        cancelar reservas quando necessário.
+                    </p>
+                    <% if (isAuthenticated) { %>
+                        <a href="/bookings" class="feature-button">Ver Reservas</a>
+                    <% } else { %>
+                        <a href="/login" class="feature-button">Ver Reservas</a>
+                    <% } %>
+                </div>
+
+                <!-- Feature 3: Ver Meu Perfil -->
+                <div class="feature-card">
+                    <div class="feature-icon user">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="feature-title">Ver Meu Perfil</h3>
+                    <p class="feature-description">
+                        Gerencie suas informações pessoais, altere sua senha e mantenha seus dados
+                        sempre atualizados. Acesse configurações da sua conta e personalize
+                        sua experiência no sistema.
+                    </p>
+                    <% if (isAuthenticated) { %>
+                        <a href="/profile" class="feature-button">Meu Perfil</a>
+                    <% } else { %>
+                        <a href="/login" class="feature-button">Meu Perfil</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-text">Sistema de Reservas INTELI © 2025</div>
+        <div class="footer-subtitle">Instituto de Tecnologia e Liderança</div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script para navegação -->
+    <script>
+        // Navegação do header
+        document.querySelectorAll('.nav-item').forEach((item, index) => {
+            item.addEventListener('click', function() {
+                // Remove active de todos
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                // Adiciona active no clicado
+                this.classList.add('active');
+
+                // Navegação
+                switch(index) {
+                    case 0: // Início
+                        window.location.href = '/';
+                        break;
+                    case 1: // Salas
+                        <% if (isAuthenticated) { %>
+                            window.location.href = '/rooms';
+                        <% } else { %>
+                            window.location.href = '/login';
+                        <% } %>
+                        break;
+                    case 2: // Reservas
+                        <% if (isAuthenticated) { %>
+                            window.location.href = '/bookings';
+                        <% } else { %>
+                            window.location.href = '/login';
+                        <% } %>
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

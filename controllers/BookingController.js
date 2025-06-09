@@ -6,38 +6,83 @@ class BookingController {
   static async create(req, res) {
     try {
       const { roomId, date, startTime, endTime, purpose, attendees } = req.body;
-      
+
       // Validar campos obrigatórios
       if (!roomId || !date || !startTime || !endTime || !purpose || !attendees) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Todos os campos são obrigatórios' 
+        return res.status(400).json({
+          success: false,
+          message: 'Todos os campos são obrigatórios'
         });
       }
-      
+
       // Verificar se a sala existe
       const room = Database.rooms.getById(parseInt(roomId));
       if (!room) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Sala não encontrada' 
+        return res.status(404).json({
+          success: false,
+          message: 'Sala não encontrada'
         });
       }
-      
-      // Verificar se a capacidade da sala é suficiente
-      if (parseInt(attendees) > room.capacity) {
-        return res.status(400).json({ 
-          success: false, 
-          message: `A sala comporta apenas ${room.capacity} pessoas` 
+
+      // Validar data (só permite reservas para hoje)
+      const today = new Date().toISOString().split('T')[0];
+      if (date !== today) {
+        return res.status(400).json({
+          success: false,
+          message: 'Reservas só podem ser feitas para o mesmo dia'
         });
       }
-      
+
+      // Validar duração (30 min a 2 horas)
+      const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
+      const endMinutes = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
+      const duration = endMinutes - startMinutes;
+
+      if (duration < 30) {
+        return res.status(400).json({
+          success: false,
+          message: 'A duração mínima da reserva é de 30 minutos'
+        });
+      }
+
+      if (duration > 120) {
+        return res.status(400).json({
+          success: false,
+          message: 'A duração máxima da reserva é de 2 horas'
+        });
+      }
+
+      // Validar participantes
+      const numAttendees = parseInt(attendees);
+      if (isNaN(numAttendees) || numAttendees <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'É obrigatório informar um número válido de participantes'
+        });
+      }
+
+      if (numAttendees > room.capacity) {
+        return res.status(400).json({
+          success: false,
+          message: `O número de participantes (${numAttendees}) excede a capacidade da sala (${room.capacity})`
+        });
+      }
+
+      // Verificar se o usuário já tem uma reserva ativa na data
+      const hasActiveBooking = Database.bookings.hasActiveBookingOnDate(req.user.id, date);
+      if (hasActiveBooking) {
+        return res.status(400).json({
+          success: false,
+          message: 'Você já possui uma reserva ativa para esta data. Cancele a reserva existente para fazer uma nova.'
+        });
+      }
+
       // Verificar disponibilidade
       const isAvailable = Database.bookings.checkAvailability(roomId, date, startTime, endTime);
       if (!isAvailable) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Sala não disponível no horário solicitado' 
+        return res.status(400).json({
+          success: false,
+          message: 'Sala não disponível no horário solicitado'
         });
       }
       
@@ -350,29 +395,41 @@ class BookingController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      
+
       // Buscar a reserva
       const booking = Database.bookings.getById(parseInt(id));
-      
+
       if (!booking) {
         return res.status(404).json({ message: 'Reserva não encontrada' });
       }
-      
+
       // Verificar se o usuário tem permissão para cancelar esta reserva
       if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
         return res.status(403).json({ message: 'Acesso negado' });
       }
-      
+
+      // Validar se o cancelamento pode ser feito (1 hora de antecedência)
+      const now = new Date();
+      const reservationDateTime = new Date(`${booking.date}T${booking.startTime}:00`);
+      const timeDifference = Math.floor((reservationDateTime.getTime() - now.getTime()) / (1000 * 60));
+
+      if (timeDifference < 60) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cancelamentos devem ser feitos com pelo menos 60 minutos (1 hora) de antecedência'
+        });
+      }
+
       // Cancelar a reserva (atualizar status para 'cancelled')
       const updatedBooking = Database.bookings.updateStatus(parseInt(id), 'cancelled');
-      
+
       if (!updatedBooking) {
         return res.status(404).json({ message: 'Reserva não encontrada' });
       }
-      
-      res.json({ 
+
+      res.json({
         success: true,
-        message: 'Reserva cancelada com sucesso' 
+        message: 'Reserva cancelada com sucesso'
       });
     } catch (error) {
       console.error('Erro ao cancelar reserva:', error);

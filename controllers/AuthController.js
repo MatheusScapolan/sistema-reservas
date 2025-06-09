@@ -11,21 +11,29 @@ class AuthController {
   static async register(req, res) {
     try {
       const { name, email, password } = req.body;
-      
+
       // Validar campos obrigatórios
       if (!name || !email || !password) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Nome, email e senha são obrigatórios' 
+        return res.status(400).json({
+          success: false,
+          message: 'Nome, email e senha são obrigatórios'
         });
       }
-      
+
+      // Validar domínio do email (@sou.inteli.edu.br)
+      if (!email.endsWith('@sou.inteli.edu.br')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Apenas emails do domínio @sou.inteli.edu.br são permitidos'
+        });
+      }
+
       // Verificar se o email já está em uso
       const existingUser = Database.users.getByEmail(email);
       if (existingUser) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Este email já está em uso' 
+        return res.status(400).json({
+          success: false,
+          message: 'Este email já está em uso'
         });
       }
       
@@ -70,21 +78,29 @@ class AuthController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-      
+
       // Validar campos obrigatórios
       if (!email || !password) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Email e senha são obrigatórios' 
+        return res.status(400).json({
+          success: false,
+          message: 'Email e senha são obrigatórios'
         });
       }
-      
+
+      // Validar domínio do email (@sou.inteli.edu.br)
+      if (!email.endsWith('@sou.inteli.edu.br')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Apenas emails do domínio @sou.inteli.edu.br são permitidos'
+        });
+      }
+
       // Buscar usuário pelo email
       const user = Database.users.getByEmail(email);
       if (!user) {
-        return res.status(401).json({ 
-          success: false, 
-          message: 'Credenciais inválidas' 
+        return res.status(401).json({
+          success: false,
+          message: 'Credenciais inválidas'
         });
       }
       

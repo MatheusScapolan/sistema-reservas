@@ -29,9 +29,27 @@
     "id": 4,
     "name": "Matheus Henrique ",
     "email": "matheus.scapolan@sou.inteli.edu.br",
-    "password": "$2b$10$SDMAwLVXvLCj.HmneZa8wOcn3YVG4/blB0XlYwjAGp0sM5I63u1xq",
+    "password": "$2b$10$vAwx3AbFWeD/EoYgbTWhzeAMxTg7EkgtUMktumQpIhkJChPxTqFh6",
     "role": "user",
     "createdAt": "2025-05-24T19:24:02.051Z",
-    "updatedAt": "2025-05-24T19:24:02.051Z"
+    "updatedAt": "2025-06-09T00:03:22.359Z"
+  },
+  {
+    "id": 5,
+    "name": "joao",
+    "email": "joao@sou.inteli.edu.br",
+    "password": "$2b$10$dQJ5SwmTC9SDUVIdxvsM2.zpiYTmehyoPKMfQz2wpuhmMyJTpeuTO",
+    "role": "user",
+    "createdAt": "2025-06-05T23:23:50.018Z",
+    "updatedAt": "2025-06-05T23:23:50.018Z"
+  },
+  {
+    "id": 6,
+    "name": "Jao Tonho Silva",
+    "email": "jao@sou.inteli.edu.br",
+    "password": "$2b$10$9RanIzBiEWn4GBZYUQyoCO0UM/0AdMHm49P8.5OZtZDkzjz/iNZ8y",
+    "role": "user",
+    "createdAt": "2025-06-08T19:10:54.919Z",
+    "updatedAt": "2025-06-08T19:10:54.919Z"
   }
 ]

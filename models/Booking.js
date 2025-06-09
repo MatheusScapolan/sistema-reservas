@@ -121,7 +121,7 @@ class Booking {
   static async checkAvailability(room_id, data_reserva, horario_inicio, horario_fim) {
     const query = `
       SELECT * FROM bookings
-      WHERE room_id = $1 
+      WHERE room_id = $1
       AND data_reserva = $2
       AND status_reserva IN ('confirmada', 'pendente')
       AND (
@@ -130,12 +130,30 @@ class Booking {
         (horario_inicio >= $3 AND horario_fim <= $4)
       )
     `;
-    
+
     try {
       const result = await pool.query(query, [room_id, data_reserva, horario_inicio, horario_fim]);
       return result.rows.length === 0; // Retorna true se estiver disponível
     } catch (error) {
       console.error('Erro ao verificar disponibilidade:', error);
+      throw error;
+    }
+  }
+
+  // Verificar se o usuário já tem uma reserva ativa na data especificada
+  static async hasActiveBookingOnDate(user_id, data_reserva) {
+    const query = `
+      SELECT * FROM bookings
+      WHERE user_id = $1
+      AND data_reserva = $2
+      AND status_reserva IN ('confirmada', 'pendente')
+    `;
+
+    try {
+      const result = await pool.query(query, [user_id, data_reserva]);
+      return result.rows.length > 0; // Retorna true se já tem reserva ativa
+    } catch (error) {
+      console.error('Erro ao verificar reserva ativa do usuário:', error);
       throw error;
     }
   }

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saindo do Sistema - Sistema de Reservas INTELI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --inteli-roxo: #2e2640;
+            --inteli-coral: #ff4545;
+            --inteli-lilas: #855ede;
+            --inteli-azul: #1426ab;
+            --inteli-cinza: #8e8e93;
+            --inteli-branco: #ffffff;
+            --font-primary: 'Space Mono', monospace;
+            --font-secondary: 'Manrope', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background: linear-gradient(135deg, var(--inteli-roxo) 0%, #3d3456 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logout-container {
+            background: white;
+            border-radius: 24px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 90%;
+            position: relative;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            margin-bottom: 40px;
+        }
+
+        .logo-img {
+            height: 60px;
+            width: auto;
+        }
+
+        .logout-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--inteli-coral);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 69, 69, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(255, 69, 69, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 69, 69, 0);
+            }
+        }
+
+        .logout-icon i {
+            font-size: 32px;
+            color: white;
+        }
+
+        .logout-title {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 28px;
+            color: var(--inteli-roxo);
+            margin-bottom: 20px;
+        }
+
+        .logout-message {
+            font-family: var(--font-secondary);
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--inteli-coral);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 40px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-home {
+            background: var(--inteli-coral);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-family: var(--font-secondary);
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-home:hover {
+            background: #e63939;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 2px solid var(--inteli-roxo);
+            color: var(--inteli-roxo);
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-family: var(--font-secondary);
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login:hover {
+            background: var(--inteli-roxo);
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer-text {
+            margin-top: 30px;
+            font-family: var(--font-secondary);
+            font-size: 14px;
+            color: #999;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .logout-container {
+                padding: 40px 30px;
+                margin: 20px;
+            }
+
+            .logout-title {
+                font-size: 24px;
+            }
+
+            .logout-message {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logout-container">
+        <!-- Logo INTELI -->
+        <div class="logo-section">
+            <img src="/images/inteli-logo.png" alt="INTELI" class="logo-img">
+        </div>
+
+        <!-- Ícone de Logout -->
+        <div class="logout-icon">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+
+        <!-- Título -->
+        <h1 class="logout-title">Saindo do Sistema</h1>
+
+        <!-- Mensagem -->
+        <p class="logout-message">
+            Você está sendo desconectado do Sistema de Reservas INTELI. Aguarde um momento...
+        </p>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner"></div>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+            <a href="/" class="btn-home">
+                <i class="fas fa-home"></i>
+                Voltar ao Início
+            </a>
+            <a href="/login" class="btn-login">
+                Ir para Login
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-text">
+            Obrigado por usar o Sistema de Reservas INTELI
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Redirecionar automaticamente para login após 4 segundos
+        setTimeout(function() {
+            window.location.href = '/login';
+        }, 4000);
+
+        // Adicionar efeito de fade out antes do redirecionamento
+        setTimeout(function() {
+            document.querySelector('.logout-container').style.animation = 'fadeOut 0.5s ease-in';
+        }, 3500);
+
+        // CSS para fade out
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

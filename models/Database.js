@@ -491,6 +491,18 @@ class BookingManager extends EntityManager {
     const bookings = this.getAll();
     return bookings.filter(booking => booking.date === date);
   }
+
+  // Verificar se o usuário já tem uma reserva ativa na data especificada
+  hasActiveBookingOnDate(userId, date) {
+    const bookings = this.getAll();
+    const userActiveBookings = bookings.filter(booking =>
+      booking.userId === parseInt(userId) &&
+      booking.date === date &&
+      booking.status !== 'cancelled'
+    );
+
+    return userActiveBookings.length > 0;
+  }
   
   // Verificar disponibilidade
   checkAvailability(roomId, date, startTime, endTime) {
@@ -533,24 +545,30 @@ class BookingManager extends EntityManager {
   
   // Sobrescrever método create para validar disponibilidade
   create(data) {
-    // Verificar disponibilidade
+    // Verificar se o usuário já tem uma reserva ativa na data
+    const hasActiveBooking = this.hasActiveBookingOnDate(data.userId, data.date);
+    if (hasActiveBooking) {
+      return { error: 'Você já possui uma reserva ativa para esta data. Cancele a reserva existente para fazer uma nova.' };
+    }
+
+    // Verificar disponibilidade da sala
     const isAvailable = this.checkAvailability(
       data.roomId,
       data.date,
       data.startTime,
       data.endTime
     );
-    
+
     if (!isAvailable) {
       return { error: 'Sala não disponível no horário solicitado' };
     }
-    
+
     // Definir status inicial como 'confirmed'
     const bookingData = {
       ...data,
       status: 'confirmed'
     };
-    
+
     return super.create(bookingData);
   }
   

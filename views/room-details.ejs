@@ -1,81 +1,651 @@
-<%- include('./partials/header') %>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Sala - Sistema de Reservas INTELI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<div class="container mt-4">
-  <% if (error && error.length > 0) { %>
-    <div class="alert alert-danger" role="alert">
-      <%= error %>
-    </div>
-  <% } %>
-  <% if (message && message.length > 0) { %>
-    <div class="alert alert-success" role="alert">
-      <%= message %>
-    </div>
-  <% } %>
-  
-  <div class="row mb-4">
-    <div class="col-md-8">
-      <h2>Detalhes da Sala</h2>
-    </div>
-    <div class="col-md-4 text-end">
-      <a href="/rooms" class="btn btn-secondary">Voltar para Salas</a>
-    </div>
-  </div>
+    <style>
+        :root {
+            --inteli-roxo: #2e2640;
+            --inteli-coral: #ff4545;
+            --inteli-azul: #1426ab;
+            --inteli-lilas: #855ede;
+            --inteli-violeta: #4a17ab;
+            --inteli-cinza: #8e8e93;
+            --inteli-cinza-escuro: #6d6d80;
+            --inteli-branco: #ffffff;
+            --font-primary: 'Inter', sans-serif;
+            --font-secondary: 'Poppins', sans-serif;
+        }
 
-  <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-      <h4 class="mb-0"><%= room.name %></h4>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-6">
-          <h5>Informações da Sala</h5>
-          <p><strong>Código:</strong> <%= room.code || room.name %></p>
-          <p><strong>Capacidade:</strong> <%= room.capacity %> pessoas</p>
-          <p><strong>Localização:</strong> <%= room.location %></p>
-          <p><strong>Recursos:</strong> <%= room.resources %></p>
-          <p><strong>Descrição:</strong> <%= room.description %></p>
-        </div>
-        <div class="col-md-6">
-          <h5>Disponibilidade</h5>
-          <% if (bookings && bookings.length > 0) { %>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Horário</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% bookings.forEach(booking => { %>
-                    <tr>
-                      <td><%= booking.date %></td>
-                      <td><%= booking.startTime %> - <%= booking.endTime %></td>
-                      <td>
-                        <% if (booking.status === 'confirmed') { %>
-                          <span class="badge bg-success">Confirmada</span>
-                        <% } else if (booking.status === 'pending') { %>
-                          <span class="badge bg-warning">Pendente</span>
-                        <% } %>
-                      </td>
-                    </tr>
-                  <% }); %>
-                </tbody>
-              </table>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        /* Header */
+        .main-header {
+            background: var(--inteli-roxo);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .inteli-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .inteli-logo:hover {
+            text-decoration: none;
+            transform: scale(1.1);
+        }
+
+        .inteli-logo-img {
+            height: 50px;
+            width: auto;
+            /* Logo original com cores naturais */
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            font-family: var(--font-primary);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active {
+            color: var(--inteli-coral);
+        }
+
+        .nav-item:not(.active) {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-item:hover {
+            color: var(--inteli-coral);
+        }
+
+        .nav-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-family: var(--font-primary);
+            font-size: 14px;
+        }
+
+        /* Dropdown do usuário */
+        .user-dropdown {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-dropdown:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            text-decoration: none;
+        }
+
+        .user-dropdown .dropdown-toggle::after {
+            margin-left: 8px;
+        }
+
+        .dropdown-menu {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .dropdown-item {
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            transform: translateX(4px);
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #fee;
+            color: #dc3545;
+        }
+
+        .dropdown-divider {
+            margin: 8px 0;
+            border-color: #e9ecef;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-family: var(--font-secondary);
+            font-weight: 700;
+            font-size: 32px;
+            color: var(--inteli-roxo);
+        }
+
+        .btn-back {
+            background: var(--inteli-cinza);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: var(--inteli-cinza-escuro);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Room Header Card */
+        .room-header-card {
+            background: var(--inteli-azul);
+            color: white;
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .room-name {
+            font-family: var(--font-secondary);
+            font-weight: 700;
+            font-size: 24px;
+            margin: 0;
+            color: white;
+        }
+
+        /* Details Card */
+        .details-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .details-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-family: var(--font-secondary);
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--inteli-roxo);
+            margin-bottom: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--inteli-roxo);
+        }
+
+        .info-value {
+            font-family: var(--font-primary);
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* Availability Section */
+        .availability-message {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .availability-message p {
+            margin: 0;
+            color: var(--inteli-azul);
+            font-size: 14px;
+        }
+
+        .availability-table {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .booking-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .booking-date {
+            font-weight: 500;
+            color: var(--inteli-roxo);
+        }
+
+        .booking-time {
+            color: #666;
+        }
+
+        .booking-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .booking-status.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-dot.available {
+            background: #28a745;
+        }
+
+        .status-text {
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: 14px;
+            color: #28a745;
+        }
+
+        /* Reserve Section */
+        .reserve-section {
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .btn-reserve {
+            background: var(--inteli-azul);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-reserve:hover {
+            background: #0f1e8a;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(20, 38, 171, 0.3);
+        }
+
+        /* Footer */
+        .main-footer {
+            background: var(--inteli-roxo);
+            color: white;
+            text-align: center;
+            padding: 20px 20px;
+            margin-top: 40px;
+        }
+
+        .footer-text {
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .footer-subtitle {
+            font-family: var(--font-primary);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-menu {
+                gap: 20px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .booking-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <a class="inteli-logo" href="/">
+                    <img src="/images/inteli-logo-branca-vermelha.png" alt="INTELI" class="inteli-logo-img">
+                </a>
             </div>
-          <% } else { %>
-            <p class="text-success">Não há reservas futuras para esta sala.</p>
-          <% } %>
-        </div>
-      </div>
-      
-      <hr class="my-4">
-      <div class="d-grid gap-2">
-        <a href="/bookings/create?roomId=<%= room.id %>" class="btn btn-primary">Reservar Esta Sala</a>
-      </div>
-    </div>
-  </div>
-</div>
 
-<%- include('./partials/footer') %>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item" onclick="window.location.href='/'">
+                        <i class="fas fa-home"></i>
+                        Início
+                    </li>
+                    <li class="nav-item active" onclick="window.location.href='/rooms'">
+                        <i class="fas fa-door-open"></i>
+                        Salas
+                    </li>
+                    <li class="nav-item" onclick="window.location.href='/bookings'">
+                        <i class="fas fa-calendar-check"></i>
+                        Reservas
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="user-section">
+                <% if (isAuthenticated) { %>
+                    <div class="dropdown">
+                        <button class="user-dropdown dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i>
+                            <span><%= user ? user.name.split(' ').slice(0, 2).join(' ') : 'Usuário' %></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user"></i>
+                                    Meu Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Sair
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                <% } else { %>
+                    <a href="/login" class="login-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Entrar
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Detalhes da Sala</h1>
+            <a href="/rooms" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Salas
+            </a>
+        </div>
+
+        <!-- Mensagens -->
+        <% if (error && error.length > 0) { %>
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= error %>
+            </div>
+        <% } %>
+        <% if (message && message.length > 0) { %>
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= message %>
+            </div>
+        <% } %>
+
+        <!-- Room Header Card -->
+        <div class="room-header-card">
+            <h2 class="room-name"><%= room.name %></h2>
+        </div>
+
+        <!-- Details Card -->
+        <div class="details-card">
+            <div class="details-grid">
+                <!-- Informações da Sala -->
+                <div class="details-section">
+                    <h3 class="section-title">Informações da Sala</h3>
+
+                    <div class="info-item">
+                        <span class="info-label">Código:</span>
+                        <span class="info-value"><%= room.code || room.name.replace('Sala ', '') %></span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Capacidade:</span>
+                        <span class="info-value"><%= room.capacity %> pessoas</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Localização:</span>
+                        <span class="info-value"><%= room.location %></span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Recursos:</span>
+                        <span class="info-value"><%= room.resources || 'TV disponível e Lousa disponível' %></span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Descrição:</span>
+                        <span class="info-value"><%= room.description || 'Sala de reunião para treino de apresentações e para desenvolvimento de projetos.' %></span>
+                    </div>
+                </div>
+
+                <!-- Disponibilidade -->
+                <div class="details-section">
+                    <h3 class="section-title">Disponibilidade</h3>
+
+                    <% if (bookings && bookings.length > 0) { %>
+                        <div class="availability-info">
+                            <div class="availability-table">
+                                <% bookings.forEach(booking => { %>
+                                    <div class="booking-row">
+                                        <span class="booking-date"><%= booking.date %></span>
+                                        <span class="booking-time"><%= booking.startTime %> - <%= booking.endTime %></span>
+                                        <span class="booking-status confirmed">Confirmada</span>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="availability-message">
+                            <p>Não há reservas futuras para esta sala.</p>
+                        </div>
+                    <% } %>
+
+                    <div class="status-indicator">
+                        <span class="status-dot available"></span>
+                        <span class="status-text">Disponível</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reserve Button -->
+            <div class="reserve-section">
+                <a href="/bookings/create?roomId=<%= room.id %>" class="btn-reserve">
+                    <i class="fas fa-calendar-plus"></i>
+                    Reservar Esta Sala
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-text">Sistema de Reservas INTELI © 2025</div>
+        <div class="footer-subtitle">Instituto de Tecnologia e Liderança</div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script para navegação -->
+    <script>
+        // Navegação do header
+        document.querySelectorAll('.nav-item').forEach((item, index) => {
+            item.addEventListener('click', function() {
+                // Remove active de todos
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                // Adiciona active no clicado
+                this.classList.add('active');
+
+                // Navegação
+                switch(index) {
+                    case 0: // Início
+                        window.location.href = '/';
+                        break;
+                    case 1: // Salas
+                        window.location.href = '/rooms';
+                        break;
+                    case 2: // Reservas
+                        window.location.href = '/bookings';
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

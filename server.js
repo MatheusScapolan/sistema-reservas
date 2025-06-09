@@ -6,12 +6,6 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-// Importar rotas
-const authRoutes = require('./routes/authRoutes');
-const roomRoutes = require('./routes/roomRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
-const webRoutes = require('./routes/webRoutes');
-
 // Inicializar o app Express
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,7 +21,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'inteli-reservas-session-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
+  cookie: {
     secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000 // 24 horas
   }
@@ -40,12 +34,15 @@ app.use(flash());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Rotas da API
-app.use('/api/auth', authRoutes);
-app.use('/api/rooms', roomRoutes);
-app.use('/api/bookings', bookingRoutes);
+// Middleware para adicionar variáveis globais às views
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session && req.session.token ? true : false;
+  res.locals.user = req.user || null;
+  next();
+});
 
-// Rotas web
+// Importar e usar rotas web
+const webRoutes = require('./routes/webRoutes');
 app.use('/', webRoutes);
 
 // Middleware de tratamento de erros

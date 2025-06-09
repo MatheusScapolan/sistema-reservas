@@ -5,6 +5,8 @@ const Database = require('../models/Database');
 const { authenticateWeb } = require('../middlewares/auth');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const PasswordResetController = require('../controllers/PasswordResetController');
+const PasswordResetToken = require('../models/PasswordResetToken');
 
 // Chave secreta para JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'inteli-reservas-secret-key';
@@ -42,13 +44,19 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     // Validar campos obrigatórios
     if (!email || !password) {
       req.flash('error', 'Email e senha são obrigatórios');
       return res.redirect('/login');
     }
-    
+
+    // Validar domínio do email (@sou.inteli.edu.br)
+    if (!email.endsWith('@sou.inteli.edu.br')) {
+      req.flash('error', 'Apenas emails do domínio @sou.inteli.edu.br são permitidos');
+      return res.redirect('/login');
+    }
+
     // Buscar usuário pelo email
     const user = Database.users.getByEmail(email);
     if (!user) {
@@ -100,19 +108,25 @@ router.get('/register', (req, res) => {
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
-    
+
     // Validar campos obrigatórios
     if (!name || !email || !password || !confirmPassword) {
       req.flash('error', 'Todos os campos são obrigatórios');
       return res.redirect('/register');
     }
-    
+
+    // Validar domínio do email (@sou.inteli.edu.br)
+    if (!email.endsWith('@sou.inteli.edu.br')) {
+      req.flash('error', 'Apenas emails do domínio @sou.inteli.edu.br são permitidos');
+      return res.redirect('/register');
+    }
+
     // Verificar se as senhas coincidem
     if (password !== confirmPassword) {
       req.flash('error', 'As senhas não coincidem');
       return res.redirect('/register');
     }
-    
+
     // Verificar se o email já está em uso
     const existingUser = Database.users.getByEmail(email);
     if (existingUser) {
@@ -154,8 +168,171 @@ router.post('/register', async (req, res) => {
 
 // Logout
 router.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/login');
+  // Renderizar a tela de logout primeiro
+  res.render('logout', {
+    title: 'Saindo do Sistema - Sistema de Reservas INTELI'
+  });
+
+  // Destruir a sessão após renderizar
+  setTimeout(() => {
+    if (req.session) {
+      req.session.destroy();
+    }
+  }, 100);
+});
+
+// Página de esqueci minha senha
+router.get('/forgot-password', (req, res) => {
+  // Se já estiver autenticado, redirecionar para a página inicial
+  if (res.locals.isAuthenticated) {
+    return res.redirect('/');
+  }
+
+  res.render('forgot-password', {
+    title: 'Esqueci minha senha - Sistema de Reservas INTELI',
+    error: req.flash('error'),
+    message: req.flash('message')
+  });
+});
+
+// Processar solicitação de recuperação de senha
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validar email
+    if (!email) {
+      req.flash('error', 'Email é obrigatório');
+      return res.redirect('/forgot-password');
+    }
+
+    // Validar domínio do email
+    if (!email.endsWith('@sou.inteli.edu.br')) {
+      req.flash('error', 'Apenas emails do domínio @sou.inteli.edu.br são permitidos');
+      return res.redirect('/forgot-password');
+    }
+
+    // Buscar usuário pelo email
+    const user = Database.users.getByEmail(email);
+    if (!user) {
+      // Por segurança, não revelar se o email existe ou não
+      req.flash('message', 'Se o email estiver cadastrado, você receberá as instruções de recuperação');
+      return res.redirect('/forgot-password');
+    }
+
+    // Gerar token único
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Definir expiração (1 hora)
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    // Salvar token no banco
+    PasswordResetToken.create(user.id, token, expiresAt.toISOString());
+
+    // Para desenvolvimento, simular envio de email
+    const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+    console.log('=== EMAIL DE RECUPERAÇÃO ===');
+    console.log('Para:', email);
+    console.log('Link de recuperação:', resetUrl);
+    console.log('Token expira em 1 hora');
+    console.log('============================');
+
+    req.flash('message', `Instruções enviadas! Para desenvolvimento, use: ${resetUrl}`);
+    res.redirect('/forgot-password');
+  } catch (error) {
+    console.error('Erro ao processar recuperação de senha:', error);
+    req.flash('error', 'Erro interno do servidor');
+    res.redirect('/forgot-password');
+  }
+});
+
+// Página de redefinir senha
+router.get('/reset-password', (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    req.flash('error', 'Token de recuperação não fornecido');
+    return res.redirect('/forgot-password');
+  }
+
+  // Validar token
+  const resetToken = PasswordResetToken.findValidToken(token);
+  const tokenValid = !!resetToken;
+
+  res.render('reset-password', {
+    title: 'Redefinir senha - Sistema de Reservas INTELI',
+    error: req.flash('error'),
+    message: req.flash('message'),
+    token,
+    tokenValid
+  });
+});
+
+// Processar redefinição de senha
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password, confirmPassword } = req.body;
+
+    // Validar campos
+    if (!token || !password || !confirmPassword) {
+      req.flash('error', 'Todos os campos são obrigatórios');
+      return res.redirect(`/reset-password?token=${token}`);
+    }
+
+    // Verificar se as senhas coincidem
+    if (password !== confirmPassword) {
+      req.flash('error', 'As senhas não coincidem');
+      return res.redirect(`/reset-password?token=${token}`);
+    }
+
+    // Validar força da senha
+    if (password.length < 6) {
+      req.flash('error', 'A senha deve ter pelo menos 6 caracteres');
+      return res.redirect(`/reset-password?token=${token}`);
+    }
+
+    // Buscar token válido
+    const resetToken = PasswordResetToken.findValidToken(token);
+
+    if (!resetToken) {
+      req.flash('error', 'Token inválido ou expirado');
+      return res.redirect('/forgot-password');
+    }
+
+    // Buscar usuário
+    const user = Database.users.getById(resetToken.userId);
+    if (!user) {
+      req.flash('error', 'Usuário não encontrado');
+      return res.redirect('/forgot-password');
+    }
+
+    // Criptografar nova senha
+    const bcrypt = require('bcryptjs');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Atualizar senha do usuário
+    const updatedUser = Database.users.update(user.id, {
+      password: hashedPassword
+    });
+
+    if (!updatedUser) {
+      req.flash('error', 'Erro ao atualizar senha');
+      return res.redirect(`/reset-password?token=${token}`);
+    }
+
+    // Marcar token como usado
+    PasswordResetToken.markAsUsed(token);
+
+    req.flash('message', 'Senha redefinida com sucesso! Faça login com sua nova senha.');
+    res.redirect('/login');
+  } catch (error) {
+    console.error('Erro ao redefinir senha:', error);
+    req.flash('error', 'Erro interno do servidor');
+    res.redirect('/forgot-password');
+  }
 });
 
 // Rotas protegidas (requerem autenticação)
@@ -236,26 +413,61 @@ router.post('/bookings/create', authenticateWeb, (req, res) => {
   try {
     const { roomId, date, startTime, endTime, purpose, attendees } = req.body;
     const userId = req.user.id;
-    
+
     // Validar campos obrigatórios
     if (!roomId || !date || !startTime || !endTime || !purpose || !attendees) {
       req.flash('error', 'Todos os campos são obrigatórios');
       return res.redirect('/bookings/create');
     }
-    
+
     // Verificar se a sala existe
     const room = Database.rooms.getById(parseInt(roomId));
     if (!room) {
       req.flash('error', 'Sala não encontrada');
       return res.redirect('/bookings/create');
     }
-    
-    // Verificar se a capacidade da sala é suficiente
-    if (parseInt(attendees) > room.capacity) {
-      req.flash('error', `A sala comporta apenas ${room.capacity} pessoas`);
+
+    // Validar data (só permite reservas para hoje)
+    const today = new Date().toISOString().split('T')[0];
+    if (date !== today) {
+      req.flash('error', 'Reservas só podem ser feitas para o mesmo dia');
       return res.redirect('/bookings/create');
     }
-    
+
+    // Validar duração (30 min a 2 horas)
+    const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
+    const endMinutes = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
+    const duration = endMinutes - startMinutes;
+
+    if (duration < 30) {
+      req.flash('error', 'A duração mínima da reserva é de 30 minutos');
+      return res.redirect('/bookings/create');
+    }
+
+    if (duration > 120) {
+      req.flash('error', 'A duração máxima da reserva é de 2 horas');
+      return res.redirect('/bookings/create');
+    }
+
+    // Validar participantes
+    const numAttendees = parseInt(attendees);
+    if (isNaN(numAttendees) || numAttendees <= 0) {
+      req.flash('error', 'É obrigatório informar um número válido de participantes');
+      return res.redirect('/bookings/create');
+    }
+
+    if (numAttendees > room.capacity) {
+      req.flash('error', `O número de participantes (${numAttendees}) excede a capacidade da sala (${room.capacity})`);
+      return res.redirect('/bookings/create');
+    }
+
+    // Verificar se o usuário já tem uma reserva ativa na data
+    const hasActiveBooking = Database.bookings.hasActiveBookingOnDate(userId, date);
+    if (hasActiveBooking) {
+      req.flash('error', 'Você já possui uma reserva ativa para esta data. Cancele a reserva existente para fazer uma nova.');
+      return res.redirect('/bookings/create');
+    }
+
     // Verificar disponibilidade
     const isAvailable = Database.bookings.checkAvailability(parseInt(roomId), date, startTime, endTime);
     if (!isAvailable) {
@@ -322,31 +534,78 @@ router.post('/bookings/:id/cancel', authenticateWeb, (req, res) => {
   try {
     const { id } = req.params;
     const booking = Database.bookings.getById(parseInt(id));
-    
+
     if (!booking) {
       req.flash('error', 'Reserva não encontrada');
       return res.redirect('/bookings');
     }
-    
+
     // Verificar se o usuário tem permissão para cancelar esta reserva
     if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
       req.flash('error', 'Acesso negado');
       return res.redirect('/bookings');
     }
-    
+
+    // Validar se o cancelamento pode ser feito (1 hora de antecedência)
+    const now = new Date();
+    const reservationDateTime = new Date(`${booking.date}T${booking.startTime}:00`);
+    const timeDifference = Math.floor((reservationDateTime.getTime() - now.getTime()) / (1000 * 60));
+
+    if (timeDifference < 60) {
+      req.flash('error', 'Cancelamentos devem ser feitos com pelo menos 60 minutos (1 hora) de antecedência');
+      return res.redirect(`/bookings/${id}`);
+    }
+
     // Cancelar a reserva (atualizar status para 'cancelled')
     const updatedBooking = Database.bookings.updateStatus(parseInt(id), 'cancelled');
-    
+
     if (!updatedBooking) {
       req.flash('error', 'Erro ao cancelar reserva');
       return res.redirect(`/bookings/${id}`);
     }
-    
+
     req.flash('message', 'Reserva cancelada com sucesso');
     res.redirect('/bookings');
   } catch (error) {
     console.error('Erro ao cancelar reserva:', error);
     req.flash('error', 'Erro interno do servidor ao cancelar reserva');
+    res.redirect('/bookings');
+  }
+});
+
+// Apagar histórico de reservas
+router.post('/bookings/clear-history', authenticateWeb, (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Buscar todas as reservas do usuário
+    const userBookings = Database.bookings.getByUser(userId);
+
+    // Filtrar apenas reservas passadas ou canceladas (histórico)
+    const today = new Date().toISOString().split('T')[0];
+    const historyBookings = userBookings.filter(b =>
+      b.date < today || b.status === 'cancelled'
+    );
+
+    // Remover as reservas do histórico
+    let deletedCount = 0;
+    historyBookings.forEach(booking => {
+      const deleted = Database.bookings.delete(booking.id);
+      if (deleted) {
+        deletedCount++;
+      }
+    });
+
+    if (deletedCount > 0) {
+      req.flash('message', `Histórico apagado com sucesso! ${deletedCount} reserva(s) removida(s).`);
+    } else {
+      req.flash('message', 'Nenhuma reserva no histórico para apagar.');
+    }
+
+    res.redirect('/bookings');
+  } catch (error) {
+    console.error('Erro ao apagar histórico:', error);
+    req.flash('error', 'Erro interno do servidor ao apagar histórico');
     res.redirect('/bookings');
   }
 });
@@ -424,26 +683,3 @@ router.post('/profile', authenticateWeb, async (req, res) => {
 });
 
 module.exports = router;
-
-
-// Página de histórico de reservas do usuário (NOVA ROTA)
-router.get('/history', authenticateWeb, (req, res) => {
-  try {
-    const userId = req.user.id;
-    const bookings = Database.bookings.getByUser(userId);
-
-    // Ordenar reservas por data (mais recentes primeiro)
-    bookings.sort((a, b) => new Date(b.date + 'T' + b.startTime) - new Date(a.date + 'T' + a.startTime));
-
-    res.render('history', {
-      title: 'Histórico de Reservas - Sistema de Reservas INTELI',
-      bookings: bookings, // Passar todas as reservas para a view
-      message: req.flash('message'),
-      error: req.flash('error')
-    });
-  } catch (error) {
-    console.error('Erro ao buscar histórico de reservas:', error);
-    req.flash('error', 'Erro interno do servidor ao buscar histórico de reservas');
-    res.redirect('/'); // Redirecionar para a página inicial em caso de erro
-  }
-});

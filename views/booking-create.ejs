@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Sala - Sistema de Reservas INTELI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- INTELI Fonts: Space Mono Bold + Manrope Normal -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- INTELI Theme CSS -->
+    <link rel="stylesheet" href="/css/inteli-theme.css">
+
+    <style>
+        :root {
+            /* 🎨 Cores Primárias INTELI */
+            --inteli-roxo: #2e2640;
+            --inteli-coral: #ff4545;
+            --inteli-lilas: #855ede;
+            --inteli-azul: #1426ab;
+            --inteli-cinza: #cccfd1;
+
+            /* 🎨 Cores Secundárias INTELI */
+            --inteli-laranja: #ff8245;
+            --inteli-cinza-escuro: #878a96;
+            --inteli-violeta: #4a17ab;
+            --inteli-azul-royal: #124aed;
+            --inteli-branco: #ffffff;
+
+            /* 🔤 Tipografia INTELI */
+            --font-primary: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-secondary: 'Space Mono', 'Courier New', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary); /* Manrope Normal */
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        /* Header */
+        .main-header {
+            background: var(--inteli-roxo);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.1);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            font-family: var(--font-primary); /* Manrope Normal */
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active {
+            color: var(--inteli-coral);
+        }
+
+        .nav-item:not(.active) {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-item:hover {
+            color: var(--inteli-coral);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-dropdown {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: white;
+            font-family: var(--font-primary);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .user-dropdown:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .user-dropdown:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .user-dropdown::after {
+            margin-left: 5px;
+        }
+
+        .dropdown-menu {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            margin-top: 8px;
+            min-width: 160px;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            font-family: var(--font-primary);
+            font-size: 14px;
+            color: var(--inteli-roxo);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            color: var(--inteli-coral);
+        }
+
+        .dropdown-item.text-danger {
+            color: #dc3545;
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #f8f9fa;
+            color: #dc3545;
+        }
+
+        .dropdown-divider {
+            margin: 8px 0;
+            border-color: #e9ecef;
+        }
+
+        .login-btn {
+            background: var(--inteli-coral);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: white;
+            font-family: var(--font-primary);
+            font-size: 14px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: var(--inteli-azul);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-family: var(--font-secondary); /* Space Mono Bold */
+            font-weight: 700;
+            font-size: 32px;
+            color: var(--inteli-roxo);
+        }
+
+        .btn-back {
+            background: var(--inteli-cinza);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: var(--inteli-cinza-escuro);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-header {
+            background: var(--inteli-azul);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .form-title {
+            font-family: var(--font-secondary); /* Space Mono Bold */
+            font-weight: 700;
+            font-size: 20px;
+            margin: 0;
+            color: white;
+        }
+
+        .booking-form {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: var(--font-primary); /* Manrope Normal */
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--inteli-roxo);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-family: var(--font-primary);
+            font-size: 14px;
+            color: #333;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--inteli-azul);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--inteli-cinza);
+        }
+
+        .form-input[readonly] {
+            background: #f8f9fa;
+            color: var(--inteli-cinza-escuro);
+        }
+
+        /* Rules Section */
+        .rules-section {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .rules-title {
+            font-family: var(--font-secondary); /* Space Mono Bold */
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--inteli-azul);
+            margin-bottom: 15px;
+        }
+
+        .rules-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .rules-list li {
+            font-family: var(--font-primary);
+            font-size: 14px;
+            color: var(--inteli-cinza-escuro);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            background: var(--inteli-coral); /* Coral para botões principais */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: var(--font-primary); /* Manrope Normal */
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background: var(--inteli-azul); /* Azul no hover */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 69, 69, 0.3);
+        }
+
+        /* Footer */
+        .main-footer {
+            background: var(--inteli-roxo);
+            color: white;
+            text-align: center;
+            padding: 20px 20px;
+            margin-top: 40px;
+        }
+
+        .footer-text {
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .footer-subtitle {
+            font-family: var(--font-primary);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-menu {
+                gap: 20px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-form {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <img src="/images/inteli-logo-branca-vermelha.png?v=2025" alt="INTELI" class="logo-img" onclick="window.location.href='/'">
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <i class="fas fa-home"></i>
+                        Início
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-door-open"></i>
+                        Salas
+                    </li>
+                    <li class="nav-item active">
+                        <i class="fas fa-calendar-check"></i>
+                        Reservas
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="user-section">
+                <% if (isAuthenticated) { %>
+                    <div class="dropdown">
+                        <button class="user-dropdown dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i>
+                            <span><%= user ? user.name.split(' ').slice(0, 2).join(' ') : 'Usuário' %></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user"></i>
+                                    Meu Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Sair
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                <% } else { %>
+                    <a href="/login" class="login-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Entrar
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Reservar Sala</h1>
+            <a href="/rooms" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Salas
+            </a>
+        </div>
+
+        <!-- Mensagens -->
+        <% if (error && error.length > 0) { %>
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= error %>
+            </div>
+        <% } %>
+        <% if (message && message.length > 0) { %>
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= message %>
+            </div>
+        <% } %>
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <div class="form-header">
+                <h2 class="form-title">Formulário de Reserva</h2>
+            </div>
+
+            <form action="/bookings/create" method="POST" class="booking-form">
+                <!-- Sala -->
+                <div class="form-group">
+                    <label for="roomId" class="form-label">Sala</label>
+                    <select class="form-input" id="roomId" name="roomId" required>
+                        <option value="">Selecione uma sala</option>
+                        <% rooms.forEach(room => { %>
+                            <option value="<%= room.id %>" <%= selectedRoomId && selectedRoomId === room.id ? 'selected' : '' %>>
+                                <%= room.name %> - Capacidade: <%= room.capacity %> pessoas - <%= room.location %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <!-- Data -->
+                <div class="form-group">
+                    <label for="date" class="form-label">Data</label>
+                    <input type="date" class="form-input" id="date" name="date"
+                           min="<%= new Date().toISOString().split('T')[0] %>"
+                           max="<%= new Date().toISOString().split('T')[0] %>"
+                           value="<%= new Date().toISOString().split('T')[0] %>"
+                           required readonly>
+                </div>
+
+                <!-- Horários -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTime" class="form-label">Horário de Início</label>
+                        <input type="time" class="form-input" id="startTime" name="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime" class="form-label">Horário de Término</label>
+                        <input type="time" class="form-input" id="endTime" name="endTime" required>
+                    </div>
+                </div>
+
+                <!-- Finalidade -->
+                <div class="form-group">
+                    <label for="purpose" class="form-label">Finalidade</label>
+                    <input type="text" class="form-input" id="purpose" name="purpose"
+                           placeholder="Ex: Reunião de projeto, Apresentação, etc." required>
+                </div>
+
+                <!-- Número de Participantes -->
+                <div class="form-group">
+                    <label for="attendees" class="form-label">Número de Participantes</label>
+                    <input type="number" class="form-input" id="attendees" name="attendees" min="1" required>
+                </div>
+
+                <!-- Regras de Reserva -->
+                <div class="rules-section">
+                    <h3 class="rules-title">Regras de Reserva</h3>
+                    <ul class="rules-list">
+                        <li>• Reservas podem ser feitas com até 30 dias de antecedência</li>
+                        <li>• Duração mínima: 30 minutos | Duração máxima: 2 horas</li>
+                        <li>• Cancelamentos devem ser feitos com pelo menos 1 hora de antecedência</li>
+                        <li>• É obrigatório informar o número real de participantes</li>
+                    </ul>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit">
+                    Reservar Sala
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-text">Sistema de Reservas INTELI © 2025</div>
+        <div class="footer-subtitle">Instituto de Tecnologia e Liderança</div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script para navegação e validação -->
+    <script>
+        // Navegação do header
+        document.querySelectorAll('.nav-item').forEach((item, index) => {
+            item.addEventListener('click', function() {
+                // Remove active de todos
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                // Adiciona active no clicado
+                this.classList.add('active');
+
+                // Navegação
+                switch(index) {
+                    case 0: // Início
+                        window.location.href = '/';
+                        break;
+                    case 1: // Salas
+                        window.location.href = '/rooms';
+                        break;
+                    case 2: // Reservas
+                        window.location.href = '/bookings';
+                        break;
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validar horários e duração
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+
+                if (startTime >= endTime) {
+                    event.preventDefault();
+                    alert('O horário de término deve ser posterior ao horário de início.');
+                    return;
+                }
+
+                // Validar duração (30 minutos a 2 horas)
+                const start = new Date(`2000-01-01T${startTime}:00`);
+                const end = new Date(`2000-01-01T${endTime}:00`);
+                const durationMinutes = (end - start) / (1000 * 60);
+
+                if (durationMinutes < 30) {
+                    event.preventDefault();
+                    alert('A duração mínima da reserva é de 30 minutos.');
+                    return;
+                }
+
+                if (durationMinutes > 120) {
+                    event.preventDefault();
+                    alert('A duração máxima da reserva é de 2 horas (120 minutos).');
+                    return;
+                }
+            });
+
+            // Validar número de participantes com base na capacidade da sala
+            const roomSelect = document.getElementById('roomId');
+            const attendeesInput = document.getElementById('attendees');
+
+            roomSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    const capacityText = selectedOption.text.match(/Capacidade: (\d+)/);
+                    if (capacityText && capacityText[1]) {
+                        const capacity = parseInt(capacityText[1]);
+                        attendeesInput.max = capacity;
+                        attendeesInput.setAttribute('data-capacity', capacity);
+                    }
+                }
+            });
+
+            attendeesInput.addEventListener('input', function() {
+                const capacity = parseInt(this.getAttribute('data-capacity') || 0);
+                if (capacity > 0 && parseInt(this.value) > capacity) {
+                    this.setCustomValidity(`A sala comporta apenas ${capacity} pessoas`);
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+
+            // Disparar o evento change para configurar a capacidade inicial se uma sala já estiver selecionada
+            if (roomSelect.value) {
+                roomSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+</body>
+</html>

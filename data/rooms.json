@@ -1,0 +1,156 @@
+[
+  {
+    "id": 1,
+    "code": "R01",
+    "name": "Sala R01",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.585Z",
+    "updatedAt": "2025-05-23T17:42:29.585Z"
+  },
+  {
+    "id": 2,
+    "code": "R02",
+    "name": "Sala R02",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 3,
+    "code": "R03",
+    "name": "Sala R03",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 4,
+    "code": "R04",
+    "name": "Sala R04",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 5,
+    "code": "R05",
+    "name": "Sala R05",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 6,
+    "code": "R06",
+    "name": "Sala R06",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 7,
+    "code": "R07",
+    "name": "Sala R07",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 8,
+    "code": "R08",
+    "name": "Sala R08",
+    "capacity": 3,
+    "location": "1º Andar",
+    "resources": "TV indisponível e Lousa indisponível",
+    "description": "Sala de reunião.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 9,
+    "code": "R09",
+    "name": "Sala R09",
+    "capacity": 10,
+    "location": "2º Andar",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 10,
+    "code": "R10",
+    "name": "Sala R10",
+    "capacity": 6,
+    "location": "Térreo",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião para treino de apresentações e para desenvolvimento de projetos.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 11,
+    "code": "C01",
+    "name": "Sala C01",
+    "capacity": 5,
+    "location": "2º Andar",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 12,
+    "code": "C02",
+    "name": "Sala C02",
+    "capacity": 5,
+    "location": "2º Andar",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 13,
+    "code": "C03",
+    "name": "Sala C03",
+    "capacity": 5,
+    "location": "2º Andar",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  },
+  {
+    "id": 14,
+    "code": "C04",
+    "name": "Sala C04",
+    "capacity": 5,
+    "location": "2º Andar",
+    "resources": "TV disponível e Lousa disponível",
+    "description": "Sala de reunião.",
+    "createdAt": "2025-05-23T17:42:29.586Z",
+    "updatedAt": "2025-05-23T17:42:29.586Z"
+  }
+]

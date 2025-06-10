@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -7,18 +8,14 @@ const cors = require('cors');
 
 // Inicializar o app Express
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware para processar JSON
-app.use(express.json());
+// Configurações do middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-<<<<<<< Updated upstream
-// Rotas
-const routes = require('./routes/index');
-app.use('/', routes);
-
-// Inicializa o servidor
-=======
 // Configuração da sessão
 app.use(session({
   secret: process.env.SESSION_SECRET || 'inteli-reservas-session-secret',
@@ -58,7 +55,8 @@ app.use((err, req, res, next) => {
 });
 
 // Iniciar o servidor
->>>>>>> Stashed changes
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
+module.exports = app;

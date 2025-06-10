@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 class EmailService {
   constructor() {
     // Configuração do transportador de email
-    // Para desenvolvimento, usaremos um serviço de teste como Ethereal
+
     this.transporter = null;
     // Não inicializar automaticamente para evitar problemas
     // this.initializeTransporter();

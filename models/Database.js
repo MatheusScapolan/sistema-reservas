@@ -23,12 +23,13 @@ class Database {
     this.rooms = new RoomManager(this);
     this.users = new UserManager(this);
     this.bookings = new BookingManager(this);
+    this.bookingHistory = new BookingHistoryManager(this);
   }
   
   // Inicializar arquivos de dados
   initializeDataFiles() {
-    const files = ['rooms.json', 'users.json', 'bookings.json'];
-    
+    const files = ['rooms.json', 'users.json', 'bookings.json', 'booking_history.json'];
+
     files.forEach(file => {
       const filePath = path.join(this.dataDir, file);
       if (!fs.existsSync(filePath)) {
@@ -615,6 +616,51 @@ class BookingManager extends EntityManager {
     }
     
     return super.update(id, data);
+  }
+}
+
+// Gerenciador de histórico de reservas
+class BookingHistoryManager extends EntityManager {
+  constructor(db) {
+    super(db, 'booking_history');
+  }
+
+  // Obter histórico por usuário
+  getByUser(userId) {
+    const history = this.getAll();
+    return history.filter(entry => entry.userId === parseInt(userId));
+  }
+
+  // Obter histórico por sala
+  getByRoom(roomId) {
+    const history = this.getAll();
+    return history.filter(entry => entry.roomId === parseInt(roomId));
+  }
+
+  // Obter histórico por data
+  getByDate(date) {
+    const history = this.getAll();
+    return history.filter(entry => entry.date === date);
+  }
+
+  // Obter histórico por reserva original
+  getByOriginalBooking(originalBookingId) {
+    const history = this.getAll();
+    return history.filter(entry => entry.originalBookingId === parseInt(originalBookingId));
+  }
+
+  // Obter estatísticas do histórico
+  getStats() {
+    const history = this.getAll();
+    const completed = history.filter(entry => entry.status === 'completed');
+    const cancelled = history.filter(entry => entry.status === 'cancelled');
+
+    return {
+      total: history.length,
+      completed: completed.length,
+      cancelled: cancelled.length,
+      lastEntry: history.length > 0 ? history[history.length - 1] : null
+    };
   }
 }
 

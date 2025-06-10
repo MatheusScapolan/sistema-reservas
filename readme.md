@@ -21,6 +21,7 @@ Este projeto é um sistema web completo para reserva de salas do INTELI, desenvo
   - Visualização de reservas ativas e históricas
   - Cancelamento de reservas
   - Verificação de disponibilidade em tempo real
+  - **Expiração automática**: Reservas são automaticamente movidas para o histórico quando passam do horário de fim (fuso horário de Brasília)
 
 ## Tecnologias Utilizadas
 
@@ -109,6 +110,15 @@ O sistema é inicializado com usuários administradores padrão:
 - `PUT /api/bookings/:id`: Atualiza uma reserva
 - `PATCH /api/bookings/:id/status`: Atualiza o status de uma reserva
 - `DELETE /api/bookings/:id`: Cancela uma reserva
+- `POST /api/bookings/process-expired`: Processa reservas expiradas manualmente (apenas admin)
+- `GET /api/bookings/expiration-stats`: Obtém estatísticas de expiração (apenas admin)
+- `GET /api/bookings/:id/check-expiration`: Verifica se uma reserva específica está expirada
+
+### Histórico de Reservas
+- `GET /api/history`: Lista todo o histórico (apenas admin)
+- `GET /api/history/:id`: Obtém detalhes de uma entrada do histórico
+- `GET /api/history/booking/:booking_id`: Lista histórico de uma reserva específica
+- `GET /api/history/user/:user_id`: Lista histórico de um usuário específico
 
 ## Rotas Web
 
@@ -124,9 +134,35 @@ O sistema é inicializado com usuários administradores padrão:
 - `/bookings/:id`: Detalhes de uma reserva específica
 - `/bookings/:id/cancel`: Rota para cancelamento de reserva
 
+## Funcionalidade de Expiração Automática
+
+O sistema implementa uma funcionalidade avançada de gerenciamento automático de reservas expiradas:
+
+### Como Funciona
+
+- **Verificação Automática**: O sistema verifica automaticamente reservas expiradas a cada 5 minutos
+- **Fuso Horário**: Utiliza o fuso horário de Brasília (America/Sao_Paulo) para todas as verificações
+- **Processamento**: Reservas que passaram do horário de fim são automaticamente movidas para o histórico
+- **Status**: Reservas movidas para o histórico recebem o status "completed"
+
+### Dados Armazenados no Histórico
+
+Cada entrada no histórico contém:
+- Todos os dados originais da reserva
+- ID da reserva original
+- Timestamp de quando expirou
+- Timestamp de quando foi movida para o histórico
+- Status final (completed/cancelled)
+
+### Endpoints para Administradores
+
+- `POST /api/bookings/process-expired`: Força o processamento manual de reservas expiradas
+- `GET /api/bookings/expiration-stats`: Obtém estatísticas sobre reservas ativas, expiradas e histórico
+
 ## Observações
 
 - O sistema utiliza persistência em arquivos JSON localizados na pasta `data/`
 - As salas disponíveis são baseadas nas salas reais do INTELI
 - O sistema implementa autenticação JWT para proteção das rotas
 - Todas as operações de reserva verificam disponibilidade em tempo real
+- Reservas expiradas são automaticamente processadas em background sem impactar a performance

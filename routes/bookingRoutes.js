@@ -19,4 +19,9 @@ router.put('/:id', BookingController.update);
 router.patch('/:id/status', BookingController.updateStatus);
 router.delete('/:id', BookingController.delete);
 
+// Rotas para gerenciamento de expiração (apenas admin)
+router.post('/process-expired', isAdmin, BookingController.processExpiredBookings);
+router.get('/expiration-stats', isAdmin, BookingController.getExpirationStats);
+router.get('/:id/check-expiration', BookingController.checkBookingExpiration);
+
 module.exports = router;

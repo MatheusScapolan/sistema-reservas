@@ -375,20 +375,36 @@ router.get('/rooms/:id', authenticateWeb, (req, res) => {
 router.get('/bookings', authenticateWeb, (req, res) => {
   const userId = req.user.id;
   const bookings = Database.bookings.getByUser(userId);
-  
+  const history = Database.bookingHistory.getByUser(userId);
+
   // Separar reservas ativas e passadas
   const today = new Date().toISOString().split('T')[0];
-  const activeBookings = bookings.filter(b => 
+  const activeBookings = bookings.filter(b =>
     (b.date > today || (b.date === today)) && b.status !== 'cancelled'
   );
-  const pastBookings = bookings.filter(b => 
+  const pastBookings = bookings.filter(b =>
     b.date < today || b.status === 'cancelled'
   );
-  
-  res.render('bookings', { 
+
+  // Adicionar informações da sala ao histórico
+  const enrichedHistory = history.map(entry => {
+    const room = Database.rooms.getById(entry.roomId);
+    return {
+      ...entry,
+      room: room ? {
+        id: room.id,
+        name: room.name,
+        capacity: room.capacity,
+        location: room.location
+      } : null
+    };
+  });
+
+  res.render('bookings', {
     title: 'Minhas Reservas - Sistema de Reservas INTELI',
     activeBookings,
     pastBookings,
+    history: enrichedHistory,
     message: req.flash('message'),
     error: req.flash('error')
   });

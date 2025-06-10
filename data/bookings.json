@@ -65,42 +65,16 @@
     "updatedAt": "2025-05-24T19:25:32.119Z"
   },
   {
-    "id": 8,
-    "roomId": 1,
-    "userId": 5,
-    "date": "2025-06-05",
-    "startTime": "06:23",
-    "endTime": "07:24",
-    "purpose": "Projeto",
-    "attendees": 2,
-    "status": "confirmed",
-    "createdAt": "2025-06-05T23:24:35.772Z",
-    "updatedAt": "2025-06-05T23:24:35.772Z"
-  },
-  {
-    "id": 12,
-    "roomId": 1,
-    "userId": 6,
-    "date": "2025-06-08",
-    "startTime": "20:30",
-    "endTime": "21:30",
-    "purpose": "Projeto",
-    "attendees": 2,
-    "status": "confirmed",
-    "createdAt": "2025-06-08T23:31:05.201Z",
-    "updatedAt": "2025-06-08T23:31:05.201Z"
-  },
-  {
-    "id": 13,
-    "roomId": 1,
+    "id": 6,
+    "roomId": 3,
     "userId": 4,
     "date": "2025-06-10",
-    "startTime": "13:13",
-    "endTime": "14:25",
-    "purpose": "projeto",
+    "startTime": "20:04",
+    "endTime": "21:04",
+    "purpose": "Projeto",
     "attendees": 2,
-    "status": "confirmed",
-    "createdAt": "2025-06-10T16:15:01.320Z",
-    "updatedAt": "2025-06-10T16:15:01.320Z"
+    "status": "cancelled",
+    "createdAt": "2025-06-10T21:04:49.157Z",
+    "updatedAt": "2025-06-10T21:04:55.216Z"
   }
 ]

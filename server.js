@@ -34,6 +34,10 @@ app.use(flash());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Middleware para verificação automática de reservas expiradas
+const { checkExpiredBookings } = require('./middlewares/bookingExpiration');
+app.use(checkExpiredBookings);
+
 // Middleware para adicionar variáveis globais às views
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session && req.session.token ? true : false;

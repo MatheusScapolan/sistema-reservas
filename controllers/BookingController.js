@@ -1,5 +1,6 @@
 // controllers/BookingController.js
 const Database = require('../models/Database');
+const BookingExpirationService = require('../services/bookingExpirationService');
 
 class BookingController {
   // Criar uma nova reserva
@@ -434,6 +435,107 @@ class BookingController {
     } catch (error) {
       console.error('Erro ao cancelar reserva:', error);
       res.status(500).json({ error: 'Erro interno do servidor ao cancelar reserva.' });
+    }
+  }
+
+  // Processar reservas expiradas manualmente (apenas admin)
+  static async processExpiredBookings(req, res) {
+    try {
+      // Verificar se é admin
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado. Apenas administradores podem executar esta operação.'
+        });
+      }
+
+      const expirationService = new BookingExpirationService(Database);
+      const result = expirationService.processExpiredBookings();
+
+      res.json({
+        success: result.success,
+        message: result.message,
+        data: {
+          processedCount: result.processedCount,
+          expiredBookings: result.expiredBookings
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao processar reservas expiradas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor ao processar reservas expiradas.',
+        error: error.message
+      });
+    }
+  }
+
+  // Obter estatísticas de expiração (apenas admin)
+  static async getExpirationStats(req, res) {
+    try {
+      // Verificar se é admin
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado. Apenas administradores podem acessar estas estatísticas.'
+        });
+      }
+
+      const expirationService = new BookingExpirationService(Database);
+      const stats = expirationService.getExpirationStats();
+
+      res.json({
+        success: true,
+        data: stats
+      });
+
+    } catch (error) {
+      console.error('Erro ao obter estatísticas de expiração:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor ao obter estatísticas.',
+        error: error.message
+      });
+    }
+  }
+
+  // Verificar se uma reserva específica está expirada
+  static async checkBookingExpiration(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Verificar se o usuário tem permissão para ver esta reserva
+      const booking = Database.bookings.getById(parseInt(id));
+      if (!booking) {
+        return res.status(404).json({
+          success: false,
+          message: 'Reserva não encontrada'
+        });
+      }
+
+      if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado'
+        });
+      }
+
+      const expirationService = new BookingExpirationService(Database);
+      const result = expirationService.checkBookingExpiration(parseInt(id));
+
+      res.json({
+        success: true,
+        data: result
+      });
+
+    } catch (error) {
+      console.error('Erro ao verificar expiração da reserva:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor ao verificar expiração.',
+        error: error.message
+      });
     }
   }
 }

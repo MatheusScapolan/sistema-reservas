@@ -66,12 +66,19 @@ http://localhost:3000
 - **routes/**: Definição de rotas da API e web
 - **views/**: Templates EJS para renderização das páginas
 
-## Usuário Administrador Padrão
+## Usuários Administradores Padrão
 
-O sistema é inicializado com um usuário administrador padrão:
+O sistema é inicializado com usuários administradores padrão:
 
-- **Email**: admin@inteli.edu.br
-- **Senha**: admin123
+### Administrador Principal
+
+- **Email**: `admin@inteli.edu.br`
+- **Senha**: `admin123`
+
+### Administrador INTELI (Domínio Estudantil)
+
+- **Email**: `admin@sou.inteli.edu.br`
+- **Senha**: `admin123`
 
 ## Endpoints da API
 

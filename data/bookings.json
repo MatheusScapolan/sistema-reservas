@@ -89,5 +89,18 @@
     "status": "confirmed",
     "createdAt": "2025-06-08T23:31:05.201Z",
     "updatedAt": "2025-06-08T23:31:05.201Z"
+  },
+  {
+    "id": 13,
+    "roomId": 1,
+    "userId": 4,
+    "date": "2025-06-10",
+    "startTime": "13:13",
+    "endTime": "14:25",
+    "purpose": "projeto",
+    "attendees": 2,
+    "status": "confirmed",
+    "createdAt": "2025-06-10T16:15:01.320Z",
+    "updatedAt": "2025-06-10T16:15:01.320Z"
   }
 ]

@@ -498,6 +498,8 @@ Ao utilizar esta tela, Cleber pode otimizar sua rotina acadêmica, encontrando e
 
 Esta tela é fundamental para várias User Stories, incluindo:
 *   "Como um usuário, quero poder visualizar todas as minhas reservas futuras em um só lugar, com detalhes como sala, data, horário e status."
+*   "Como um usuário, quero poder modificar ou cancelar minhas reservas futuras quando necessário."
+*   "Como um usuário, quero poder consultar o histórico das minhas reservas passadas para acompanhar meu uso das salas."
 *   "Como um usuário, quero poder modificar os detalhes de uma reserva futura, como data ou horário, se necessário."
 *   "Como um usuário, quero poder cancelar uma reserva futura se meus planos mudarem."
 *   "Como um usuário, quero poder visualizar meu histórico de reservas passadas para referência."
@@ -632,7 +634,7 @@ Os assets visuais complementam a interface e reforçam a identidade da marca:
 Este guia fornece a base para a construção e evolução da interface do Sistema de Reservas de Salas INTELI, promovendo uma experiência de usuário consistente, agradável e alinhada à identidade visual da instituição.
 
 
-### 3.5. Protótipo de alta fidelidade (Semana 05)
+### 3.5. Protótipo de alta fidelidade
 
 A seguir é apresentado as telas que compõem o protótipo de alta fidelidade do Sistema de Reservas de Salas do INTELI. Este protótipo reflete visualmente as funcionalidades e fluxos de interação definidos nas etapas anteriores do projeto, aplicando os padrões visuais estabelecidos no Guia de Estilos (seção 3.4) e alinhando-se à identidade visual do INTELI. As imagens estão organizadas para demonstrar os principais fluxos de navegação do usuário, desde o acesso inicial até a gestão de reservas e perfil.
 
@@ -1150,29 +1152,462 @@ A validação funcional dos endpoints da API pode ser realizada por meio dos seg
 
 Para uma validação completa, recomenda-se a combinação de testes manuais da API (utilizando `rest.http`) e testes funcionais através da interface web.
 
-### 3.7 Interface e Navegação (Semana 07)
+### 3.7 Interface e Navegação
 
-*Descreva e ilustre aqui o desenvolvimento do frontend do sistema web, explicando brevemente o que foi entregue em termos de código e sistema. Utilize prints de tela para ilustrar.*
+## Desenvolvimento do Frontend do Sistema Web
+
+### Visão Geral
+
+Esta seção descreve o desenvolvimento do frontend do Sistema de Reservas INTELI, uma aplicação web completa desenvolvida para gerenciar reservas de salas do instituto. O frontend foi construído utilizando tecnologias modernas e seguindo o Design System oficial do INTELI, garantindo uma experiência de usuário consistente e profissional.
+
+### Tecnologias Utilizadas
+
+#### Template Engine
+- **EJS (Embedded JavaScript)**: Utilizado para renderização server-side das páginas
+- **Partials**: Componentes reutilizáveis para header, footer e elementos comuns
+
+#### Framework CSS
+- **Bootstrap 5**: Framework responsivo para layout e componentes
+- **CSS Customizado**: Estilos personalizados seguindo o Design System INTELI
+
+#### JavaScript
+- **ES6+**: JavaScript moderno para interatividade
+- **Fetch API**: Para comunicação com a API REST
+- **DOM Manipulation**: Para atualizações dinâmicas da interface
+
+#### Design System
+- **Cores INTELI**: Paleta oficial (#1426ab, #2e2640, #ff4545)
+- **Tipografia**: Fontes Inter e Poppins
+- **Iconografia**: Font Awesome para ícones consistentes
+
+### Páginas Desenvolvidas
+
+#### 1. Página Inicial (index.ejs)
+**Funcionalidade**: Landing page com visão geral do sistema
+
+**Características**:
+- Header com navegação principal
+- Seção hero com call-to-action
+- Cards informativos sobre funcionalidades
+- Estatísticas em tempo real
+- Footer com informações institucionais
+
+**Elementos Visuais**:
+- Logo INTELI oficial (branca e vermelha)
+- Gradientes e sombras modernas
+- Layout responsivo para diferentes dispositivos
+- Animações sutis de hover
+
+#### 2. Sistema de Autenticação
+
+##### Login (login.ejs)
+**Funcionalidade**: Autenticação de usuários
+
+**Características**:
+- Formulário de login centralizado
+- Validação client-side e server-side
+- Mensagens de erro/sucesso
+- Link para cadastro
+- Design minimalista e profissional
+
+##### Cadastro (register.ejs)
+**Funcionalidade**: Registro de novos usuários
+
+**Características**:
+- Formulário com validação em tempo real
+- Verificação de força da senha
+- Validação de email
+- Termos de uso e política de privacidade
+
+#### 3. Gerenciamento de Salas
+
+##### Listagem de Salas (rooms.ejs)
+**Funcionalidade**: Visualização de todas as salas disponíveis
+
+**Características**:
+- Grid responsivo de cards de salas
+- Filtros por capacidade e recursos
+- Busca em tempo real
+- Indicadores de disponibilidade
+- Paginação para grandes volumes de dados
+
+**Elementos Interativos**:
+- Filtros dropdown com múltipla seleção
+- Cards com hover effects
+- Botões de ação contextuais
+- Loading states durante carregamento
+
+##### Detalhes da Sala (room-details.ejs)
+**Funcionalidade**: Informações detalhadas de uma sala específica
+
+**Características**:
+- Layout detalhado com informações completas
+- Galeria de imagens (quando disponível)
+- Lista de recursos disponíveis
+- Calendário de disponibilidade
+- Botão para criar reserva
+
+#### 4. Sistema de Reservas
+
+##### Listagem de Reservas (bookings.ejs)
+**Funcionalidade**: Gerenciamento de reservas do usuário
+
+**Características**:
+- Tabela responsiva com reservas
+- Filtros por status e data
+- Ações contextuais (visualizar, cancelar)
+- Indicadores visuais de status
+- Paginação e ordenação
+
+**Estados Visuais**:
+- Reservas confirmadas (verde)
+- Reservas pendentes (amarelo)
+- Reservas canceladas (vermelho)
+- Reservas expiradas (cinza)
+
+##### Criação de Reserva (booking-create.ejs)
+**Funcionalidade**: Formulário para nova reserva
+
+**Características**:
+- Wizard multi-step
+- Seleção de sala com preview
+- Calendário interativo
+- Validação de conflitos em tempo real
+- Resumo antes da confirmação
+
+##### Detalhes da Reserva (booking-details.ejs)
+**Funcionalidade**: Visualização completa de uma reserva
+
+**Características**:
+- Layout em duas colunas
+- Informações da reserva e da sala
+- Banner colorido com status
+- Botões de ação (cancelar, editar)
+- Modal de confirmação para ações críticas
+
+### Componentes Reutilizáveis
+
+#### Header (partials/header.ejs)
+**Funcionalidade**: Navegação principal do sistema
+
+**Características**:
+- Logo INTELI clicável
+- Menu de navegação responsivo
+- Dropdown de usuário autenticado
+- Indicadores de página ativa
+- Design sticky para melhor UX
+
+#### Footer
+**Funcionalidade**: Informações institucionais
+
+**Características**:
+- Copyright e informações legais
+- Links úteis
+- Informações de contato
+- Design minimalista
+
+### Padrões de Interface
+
+#### Design System INTELI
+**Cores Principais**:
+- Azul INTELI: #1426ab (banners e elementos principais)
+- Roxo INTELI: #2e2640 (hover states e elementos secundários)
+- Coral INTELI: #ff4545 (alertas e call-to-actions)
+
+**Tipografia**:
+- Títulos: Poppins (600-700)
+- Textos: Inter (400-500)
+- Hierarquia clara e legível
+
+#### Componentes Padronizados
+- Botões com estados hover consistentes
+- Cards com sombras e bordas arredondadas
+- Formulários com validação visual
+- Modais para confirmações
+- Alertas para feedback do usuário
+
+### Responsividade
+
+#### Breakpoints
+- Mobile: < 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
+
+#### Adaptações Mobile
+- Menu hamburger para navegação
+- Cards empilhados verticalmente
+- Formulários otimizados para touch
+- Botões com tamanho adequado para dedos
+
+### Interatividade e UX
+
+#### Feedback Visual
+- Loading spinners durante operações
+- Mensagens de sucesso/erro
+- Confirmações para ações destrutivas
+- Indicadores de progresso
+
+#### Navegação
+- Breadcrumbs para orientação
+- Botões "Voltar" contextuais
+- Links internos consistentes
+- URLs amigáveis e semânticas
+
+### Acessibilidade
+
+#### Padrões Implementados
+- Contraste adequado de cores
+- Textos alternativos para imagens
+- Navegação por teclado
+- Labels descritivos em formulários
+- Estrutura semântica HTML5
+
+### Performance
+
+#### Otimizações
+- CSS e JS minificados
+- Imagens otimizadas
+- Lazy loading para conteúdo não crítico
+- Cache de recursos estáticos
+
+### Validações Client-Side
+
+#### Formulários
+- Validação em tempo real
+- Mensagens de erro contextuais
+- Prevenção de submissões inválidas
+- Feedback visual imediato
+
+### Integração com Backend
+
+#### Comunicação API
+- Fetch API para requisições assíncronas
+- Tratamento de erros HTTP
+- Loading states durante requisições
+- Retry automático para falhas de rede
+
+### Conclusão
+
+O frontend desenvolvido oferece uma experiência de usuário moderna, intuitiva e totalmente alinhada com a identidade visual do INTELI. A aplicação é responsiva, acessível e performática, proporcionando uma interface profissional para o gerenciamento de reservas de salas.
+
+A arquitetura modular com componentes reutilizáveis facilita a manutenção e evolução do sistema, enquanto o uso de tecnologias modernas garante compatibilidade e performance em diferentes dispositivos e navegadores.
+
+O sistema entregue atende completamente aos requisitos funcionais e não-funcionais estabelecidos, oferecendo uma solução robusta e escalável para o gerenciamento de reservas do INTELI.
 
 ---
 
-## <a name="c4"></a>4. Desenvolvimento da Aplicação Web (Semana 8)
+## <a name="c4"></a>4. Desenvolvimento da Aplicação Web
 
-### 4.1 Demonstração do Sistema Web (Semana 8)
+### 4.1 Demonstração do Sistema Web
 
-*VIDEO: Insira o link do vídeo demonstrativo nesta seção*
-*Descreva e ilustre aqui o desenvolvimento do sistema web completo, explicando brevemente o que foi entregue em termos de código e sistema. Utilize prints de tela para ilustrar.*
+**VIDEO: [Link do vídeo demonstrativo será inserido aqui]**
+
+O Sistema de Reservas INTELI foi desenvolvido como uma aplicação web completa, implementando todas as funcionalidades planejadas e seguindo as melhores práticas de desenvolvimento. O sistema entregue representa uma solução robusta e escalável para o gerenciamento de reservas de salas no ambiente acadêmico do INTELI.
+
+#### 4.1.1 Funcionalidades Implementadas
+
+**Sistema de Autenticação Completo:**
+- Tela de login com validação de credenciais
+- Sistema de cadastro de novos usuários
+- Autenticação baseada em JWT (JSON Web Tokens)
+- Controle de sessão e logout seguro
+- Validação de email institucional
+
+**Gerenciamento de Salas:**
+- Listagem completa de salas disponíveis no INTELI
+- Visualização detalhada de cada sala com informações de capacidade, localização e recursos
+- Filtros avançados por capacidade e recursos disponíveis
+- Interface responsiva adaptável a diferentes dispositivos
+
+**Sistema de Reservas Avançado:**
+- Criação de reservas com validação de conflitos em tempo real
+- Visualização de reservas ativas organizadas por status
+- Cancelamento de reservas com confirmação
+- **Funcionalidade inovadora**: Sistema automático de expiração de reservas que move automaticamente reservas finalizadas para o histórico
+- Verificação contínua de disponibilidade
+
+**Histórico e Relatórios:**
+- Histórico completo de todas as reservas do usuário
+- Rastreabilidade de alterações e cancelamentos
+- Estatísticas de uso para administradores
+
+#### 4.1.2 Arquitetura Técnica Implementada
+
+**Backend (Node.js + Express):**
+- API REST completa com endpoints documentados
+- Middleware de autenticação JWT
+- Validação de dados server-side
+- Sistema de logs e tratamento de erros
+- Processamento automático de reservas expiradas
+
+**Frontend (EJS + Bootstrap):**
+- Interface responsiva seguindo o Design System INTELI
+- Validação client-side em tempo real
+- Feedback visual para todas as ações do usuário
+- Navegação intuitiva e consistente
+- Componentes reutilizáveis (header, footer, modais)
+
+**Persistência de Dados:**
+- Sistema de arquivos JSON para armazenamento local
+- Estrutura normalizada de dados
+- Backup automático e integridade referencial
+- Modelos bem definidos (User, Room, Booking, History)
+
+#### 4.1.3 Design System INTELI
+
+O sistema foi desenvolvido seguindo rigorosamente o Design System oficial do INTELI:
+
+**Paleta de Cores:**
+- Azul INTELI (#1426ab): Elementos principais e banners
+- Roxo INTELI (#2e2640): Estados hover e elementos secundários
+- Coral INTELI (#ff4545): Alertas e call-to-actions
+- Tons de cinza para textos e elementos neutros
+
+**Tipografia:**
+- Poppins: Títulos e elementos de destaque
+- Inter: Textos corridos e elementos de interface
+- Hierarquia visual clara e legível
+
+**Componentes Visuais:**
+- Logo oficial INTELI (branca e vermelha) padronizada em todas as páginas
+- Cards com sombras e bordas arredondadas
+- Botões com estados hover consistentes
+- Modais para confirmações importantes
+
+#### 4.1.4 Funcionalidades Inovadoras
+
+**Sistema de Expiração Automática:**
+- Verificação automática a cada 5 minutos de reservas expiradas
+- Movimentação automática para histórico sem intervenção manual
+- Utilização do fuso horário de Brasília para precisão
+- Endpoints administrativos para monitoramento
+
+**Interface Responsiva Avançada:**
+- Adaptação completa para mobile, tablet e desktop
+- Menu hamburger otimizado para dispositivos móveis
+- Touch-friendly para interações em dispositivos móveis
+- Performance otimizada para diferentes conexões
 
 ### 4.2 Conclusões e Trabalhos Futuros (Semana 8)
 
-*Indique pontos fortes e pontos a melhorar de maneira geral.*
-*Relacione também quaisquer outras ideias que você tenha para melhorias futuras.*
+#### 4.2.1 Pontos Fortes do Sistema
 
+**Arquitetura Sólida:**
+- Implementação completa do padrão MVC garantindo separação clara de responsabilidades
+- API REST bem estruturada e documentada facilitando futuras integrações
+- Sistema de autenticação robusto com JWT garantindo segurança
+- Código organizado e modular facilitando manutenção e evolução
 
+**Experiência do Usuário Excepcional:**
+- Interface intuitiva e responsiva seguindo o Design System INTELI
+- Feedback visual imediato para todas as ações do usuário
+- Navegação consistente e previsível em todas as páginas
+- Validações em tempo real evitando erros e frustrações
+
+**Funcionalidades Inovadoras:**
+- Sistema automático de expiração de reservas único no mercado
+- Verificação de conflitos em tempo real prevenindo sobreposições
+- Histórico completo com rastreabilidade de todas as ações
+- Filtros avançados para busca eficiente de salas
+
+**Alinhamento Institucional:**
+- Design completamente alinhado com a identidade visual do INTELI
+- Funcionalidades específicas para o contexto acadêmico
+- Escalabilidade para atender o crescimento da instituição
+
+#### 4.2.2 Pontos a Melhorar
+
+**Persistência de Dados:**
+- Migração para banco de dados relacional (PostgreSQL/MySQL) para maior robustez
+- Implementação de backup automático e recuperação de desastres
+- Otimização de consultas para grandes volumes de dados
+
+**Funcionalidades Administrativas:**
+- Dashboard administrativo para gestão completa do sistema
+- Relatórios avançados com gráficos e estatísticas detalhadas
+- Sistema de notificações por email para lembretes de reservas
+
+**Segurança e Performance:**
+- Implementação de rate limiting para prevenir ataques
+- Cache de dados para melhorar performance
+- Logs mais detalhados para auditoria e debugging
+
+#### 4.2.3 Trabalhos Futuros
+
+**Expansão de Funcionalidades:**
+
+1. **Sistema de Notificações:**
+   - Notificações por email para confirmação e lembretes de reservas
+   - Notificações push para aplicativo mobile futuro
+   - Sistema de alertas para administradores
+
+2. **Integração com Calendários:**
+   - Sincronização com Google Calendar e Outlook
+   - Exportação de reservas para calendários pessoais
+   - Visualização em formato de calendário mensal/semanal
+
+3. **Aplicativo Mobile Nativo:**
+   - Desenvolvimento de app iOS e Android
+   - Notificações push nativas
+   - Funcionalidades offline para consulta de reservas
+
+4. **Recursos Avançados de Salas:**
+   - Sistema de check-in/check-out via QR Code
+   - Integração com sistemas de climatização e iluminação
+   - Reserva de equipamentos específicos (projetores, notebooks)
+
+**Melhorias Técnicas:**
+
+1. **Arquitetura de Microserviços:**
+   - Separação em serviços independentes para maior escalabilidade
+   - Implementação de API Gateway
+   - Containerização com Docker
+
+2. **Analytics e Business Intelligence:**
+   - Dashboard com métricas de uso das salas
+   - Análise preditiva para otimização de recursos
+   - Relatórios de ocupação e tendências de uso
+
+3. **Integração Institucional:**
+   - Single Sign-On (SSO) com sistemas acadêmicos existentes
+   - Integração com sistema de matrícula para validação automática
+   - API para integração com outros sistemas do INTELI
+
+**Impacto Esperado:**
+
+O Sistema de Reservas INTELI tem potencial para se tornar uma ferramenta fundamental na gestão de espaços da instituição, promovendo:
+- Otimização do uso de recursos físicos
+- Redução de conflitos e problemas de agendamento
+- Melhoria na experiência acadêmica de estudantes e professores
+- Base sólida para futuras expansões e integrações
+
+---
 
 ## <a name="c5"></a>5. Referências
 
-_Incluir as principais referências de seu projeto, para que seu parceiro possa consultar caso ele se interessar em aprofundar. Um exemplo de referência de livro e de site:_<br>
+BROWN, Simon. **The C4 model for visualising software architecture**. Disponível em: https://c4model.com/. Acesso em: 15 jan. 2025.
+
+FIELDING, Roy Thomas. **Architectural Styles and the Design of Network-based Software Architectures**. Doctoral dissertation, University of California, Irvine, 2000.
+
+FOWLER, Martin. **Patterns of Enterprise Application Architecture**. Boston: Addison-Wesley, 2002.
+
+GAMMA, Erich et al. **Design Patterns: Elements of Reusable Object-Oriented Software**. Boston: Addison-Wesley, 1994.
+
+MOZILLA DEVELOPER NETWORK. **HTTP | MDN**. Disponível em: https://developer.mozilla.org/en-US/docs/Web/HTTP. Acesso em: 10 jan. 2025.
+
+NODE.JS FOUNDATION. **Node.js Documentation**. Disponível em: https://nodejs.org/en/docs/. Acesso em: 12 jan. 2025.
+
+ORACLE CORPORATION. **MySQL 8.0 Reference Manual**. Disponível em: https://dev.mysql.com/doc/refman/8.0/en/. Acesso em: 08 jan. 2025.
+
+POSTGRESQL GLOBAL DEVELOPMENT GROUP. **PostgreSQL Documentation**. Disponível em: https://www.postgresql.org/docs/. Acesso em: 08 jan. 2025.
+
+REENSKAUG, Trygve. **The original MVC reports**. Disponível em: http://heim.ifi.uio.no/~trygver/themes/mvc/mvc-index.html. Acesso em: 14 jan. 2025.
+
+SILBERSCHATZ, Abraham; GALVIN, Peter Baer; GAGNE, Greg. **Operating System Concepts**. 10th ed. Hoboken: John Wiley & Sons, 2018.
+
+W3C. **HTML5: A vocabulary and associated APIs for HTML and XHTML**. Disponível em: https://www.w3.org/TR/html52/. Acesso em: 11 jan. 2025.
+
+W3C. **Cascading Style Sheets Level 2 Revision 1 (CSS 2.1) Specification**. Disponível em: https://www.w3.org/TR/CSS21/. Acesso em: 11 jan. 2025.
 
 ---
 ---

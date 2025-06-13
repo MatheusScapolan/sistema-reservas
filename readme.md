@@ -12,36 +12,100 @@ O projeto segue o padrão MVC (Model-View-Controller) para organização do cód
 
 ```text
 sistema-reservas-inteli/
+├── assets/                # Recursos de documentação
+│   ├── diagrama_mvc/         # Diagramas MVC
+│   ├── diagrama_relacional/  # Diagramas relacionais
+│   ├── personas/             # Personas do projeto
+│   ├── prototipo_alta_fidelidade/  # Protótipos
+│   └── wireframe/            # Wireframes
+├── config/                # Configurações do sistema
+│   └── database.js           # Configuração PostgreSQL (Supabase)
 ├── controllers/           # Controladores (lógica de negócio)
-│   ├── authController.js     # Autenticação e autorização
-│   ├── bookingController.js  # Gerenciamento de reservas
-│   ├── historyController.js  # Histórico de reservas
-│   └── roomController.js     # Gerenciamento de salas
+│   ├── AuthController.js     # Autenticação e autorização
+│   ├── BookingController.js  # Gerenciamento de reservas
+│   ├── BookingHistoryController.js  # Histórico de reservas
+│   ├── PasswordResetController.js   # Recuperação de senha
+│   ├── RoomController.js     # Gerenciamento de salas
+│   └── UserController.js     # Gerenciamento de usuários
 ├── data/                  # Persistência de dados (JSON)
+│   ├── booking_history.json  # Histórico de reservas
 │   ├── bookings.json        # Dados das reservas
-│   ├── history.json         # Histórico de reservas
+│   ├── password_reset_tokens.json  # Tokens de recuperação
 │   ├── rooms.json           # Dados das salas
 │   └── users.json           # Dados dos usuários
-├── middlewares/           # Middlewares de autenticação
-│   └── auth.js              # Verificação de JWT
+├── db/                    # Configurações de banco de dados
+│   └── connection.js         # Pool de conexões PostgreSQL
+├── middlewares/           # Middlewares de autenticação e serviços
+│   ├── auth.js              # Verificação de JWT
+│   └── bookingExpiration.js  # Middleware de expiração automática
 ├── models/                # Camada de acesso a dados
-│   ├── Booking.js           # Modelo de reservas
-│   ├── History.js           # Modelo de histórico
+│   ├── BookingHistory.js    # Modelo de histórico
+│   ├── Database.js          # Gerenciador central (Singleton)
+│   ├── PasswordResetToken.js # Modelo de tokens de recuperação
 │   ├── Room.js              # Modelo de salas
 │   └── User.js              # Modelo de usuários
 ├── public/                # Arquivos estáticos
 │   ├── css/                 # Estilos CSS
-│   ├── images/              # Imagens e logos
-│   └── js/                  # Scripts JavaScript
+│   │   ├── inteli-theme.css    # Design System INTELI implementado
+│   │   └── style.css           # Estilos adicionais
+│   ├── images/              # Imagens e logos INTELI
+│   │   ├── inteli-logo-branca-vermelha.png  # Logo oficial
+│   │   ├── inteli-logo-branca.png           # Logo branca
+│   │   └── inteli-logo.png                  # Logo padrão
+│   └── js/                  # Scripts JavaScript client-side
+│       └── main.js             # Scripts principais
 ├── routes/                # Definição de rotas
-│   ├── api/                 # Rotas da API REST
-│   └── web/                 # Rotas das páginas web
+│   ├── authRoutes.js        # Rotas de autenticação (/api/auth)
+│   ├── bookingHistoryRoutes.js  # Rotas de histórico (/api/history)
+│   ├── bookingRoutes.js     # Rotas de reservas (/api/bookings)
+│   ├── index.js             # Agregador de rotas API (/api/*)
+│   ├── passwordResetRoutes.js   # Rotas de recuperação de senha
+│   ├── roomRoutes.js        # Rotas de salas (/api/rooms)
+│   ├── userRoutes.js        # Rotas de usuários (/api/users)
+│   └── webRoutes.js         # Rotas das páginas web (/*)
+├── scripts/               # Scripts de banco de dados
+│   └── init.sql              # Script de inicialização
+├── services/              # Serviços de negócio
+│   ├── bookingExpirationService.js  # Serviço de expiração
+│   ├── emailService.js      # Serviço de email
+│   └── userService.js       # Serviços de usuário
+├── tests/                 # Testes automatizados
+│   ├── bookingValidations.test.js  # Testes de validações
+│   └── booking.test.js      # Testes de reservas
+├── utils/                 # Utilitários
+│   └── bookingValidations.js    # Validações de reservas
 ├── views/                 # Templates EJS
 │   ├── partials/            # Componentes reutilizáveis
-│   └── *.ejs                # Páginas do sistema
-├── app.js                 # Configuração principal do Express
-├── package.json           # Dependências e scripts
-└── README.md              # Documentação do projeto
+│   │   ├── footer.ejs          # Rodapé institucional
+│   │   └── header.ejs          # Cabeçalho com navegação
+│   ├── booking-create.ejs   # Criação de reserva
+│   ├── booking-details.ejs  # Detalhes da reserva
+│   ├── bookings.ejs         # Lista de reservas
+│   ├── forgot-password.ejs  # Recuperação de senha
+│   ├── index.ejs            # Página inicial
+│   ├── login.ejs            # Página de login
+│   ├── logout.ejs           # Página de logout
+│   ├── profile.ejs          # Perfil do usuário
+│   ├── register.ejs         # Página de registro
+│   ├── reset-password.ejs   # Redefinição de senha
+│   ├── room-details.ejs     # Detalhes da sala
+│   └── rooms.ejs            # Lista de salas
+├── .env                   # Variáveis de ambiente (não versionado)
+├── .gitattributes         # Configurações Git
+├── .gitignore             # Arquivos ignorados pelo Git
+├── DOCUMENTACAO_ALTERNATIVA.md  # Documentação alternativa
+├── init-db.js             # Script de inicialização do banco
+├── jest.config.js         # Configuração de testes Jest
+├── package.json           # Dependências e scripts NPM
+├── package-lock.json      # Lock de dependências
+├── README.md              # Documentação do projeto
+├── save_inteli_logo.html  # Utilitário para salvar logo
+├── seed-db.js             # Script de seed do banco
+├── server.js              # Servidor principal Express
+├── test_one_booking_per_day.js  # Teste específico
+├── test-api.js            # Testes de API
+├── test-endpoints.js      # Testes de endpoints
+└── WAD.md                 # Documentação técnica WAD
 ```
 
 ## Funcionalidades

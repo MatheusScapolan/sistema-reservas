@@ -1,10 +1,8 @@
 # Web Application Document - Projeto Individual - Módulo 2 - Inteli
 
-**_Os trechos em itálico servem apenas como guia para o preenchimento da seção. Por esse motivo, não devem fazer parte da documentação final._**
+## Sistema de Reservas de Salas INTELI
 
-## Nome do Projeto
-
-#### Autor do projeto
+#### Matheus Henrique Scapolan Silva
 
 ## Sumário
 
@@ -202,6 +200,8 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER trg_bookings_updated_at
 BEFORE UPDATE ON bookings
 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+SET TIMEZONE TO 'America/Sao_Paulo';
 ```
 
 **Diagrama Relacional (ERD):**
@@ -217,10 +217,10 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 </div>
 <br>
 
-### 3.1.1 BD e Models (Semana 5)
+### 3.1.1 BD e Models
 *Descreva aqui os Models implementados no sistema web*
 
-### 3.2. Arquitetura (Semana 5)
+### 3.2. Arquitetura
 
 *Posicione aqui o diagrama de arquitetura da sua solução de aplicação web. Atualize sempre que necessário.*
 
@@ -228,8 +228,6 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 - **Model**: A camada que lida com a lógica de negócios e interage com o banco de dados.
 - **View**: A camada responsável pela interface de usuário.
 - **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
-  
-*Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
 
 <br>
 

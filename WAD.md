@@ -218,32 +218,493 @@ SET TIMEZONE TO 'America/Sao_Paulo';
 <br>
 
 ### 3.1.1 BD e Models
-*Descreva aqui os Models implementados no sistema web*
+
+O Sistema de Reservas INTELI implementa uma arquitetura de dados baseada em modelos bem definidos que encapsulam a lógica de negócio e o acesso aos dados. O sistema utiliza uma abordagem híbrida, com modelos preparados tanto para persistência em arquivos JSON (implementação atual) quanto para bancos de dados relacionais (PostgreSQL), garantindo flexibilidade e escalabilidade.
+
+#### 3.1.1.1 Arquitetura de Persistência
+
+**Database.js - Gerenciador Central de Dados**
+
+O arquivo `Database.js` atua como o núcleo do sistema de persistência, implementando o padrão Singleton para garantir uma única instância de acesso aos dados. Esta classe centraliza o gerenciamento de todas as entidades do sistema:
+
+```javascript
+class Database {
+  constructor() {
+    this.dataDir = path.join(__dirname, '..', 'data');
+    this.initializeDataFiles();
+    this.loadInteliRooms();
+
+    // Inicializar gerenciadores de entidades
+    this.rooms = new RoomManager(this);
+    this.users = new UserManager(this);
+    this.bookings = new BookingManager(this);
+    this.bookingHistory = new BookingHistoryManager(this);
+  }
+}
+```
+
+**Características Principais:**
+- **Inicialização Automática**: Cria automaticamente os arquivos de dados se não existirem
+- **Dados Pré-carregados**: Inclui salas reais do INTELI e usuários administradores padrão
+- **Gerenciadores Especializados**: Cada entidade possui seu próprio gerenciador com métodos específicos
+- **Integridade Referencial**: Validações para manter a consistência dos dados
+
+#### 3.1.1.2 Models Implementados
+
+**1. User Model (UserManager)**
+
+Responsável pelo gerenciamento de usuários do sistema, incluindo autenticação e autorização.
+
+**Estrutura de Dados:**
+```javascript
+{
+  id: Number,           // Identificador único
+  name: String,         // Nome completo do usuário
+  email: String,        // Email institucional (@sou.inteli.edu.br)
+  password: String,     // Senha criptografada com bcrypt
+  role: String,         // Papel do usuário ('user' ou 'admin')
+  createdAt: Date       // Data de criação
+}
+```
+
+**Métodos Principais:**
+- `create(userData)`: Cria novo usuário com validação de email e criptografia de senha
+- `getByEmail(email)`: Busca usuário por email para autenticação
+- `getById(id)`: Recupera usuário por ID
+- `getAll()`: Lista todos os usuários (apenas admin)
+- `update(id, userData)`: Atualiza dados do usuário
+- `delete(id)`: Remove usuário do sistema
+
+**Validações Implementadas:**
+- Email deve terminar com `@sou.inteli.edu.br` ou `@inteli.edu.br`
+- Senha é automaticamente criptografada com bcrypt (salt 10)
+- Verificação de unicidade de email
+- Validação de campos obrigatórios
+
+**2. Room Model (RoomManager)**
+
+Gerencia as salas disponíveis no INTELI com suas características e recursos.
+
+**Estrutura de Dados:**
+```javascript
+{
+  id: Number,           // Identificador único da sala
+  name: String,         // Nome/código da sala (ex: "R03", "Auditório")
+  capacity: Number,     // Capacidade máxima de pessoas
+  location: String,     // Localização física (ex: "Térreo", "1º Andar")
+  resources: String,    // Recursos disponíveis (ex: "TV, Lousa, Projetor")
+  description: String,  // Descrição adicional da sala
+  createdAt: Date      // Data de criação
+}
+```
+
+**Métodos Principais:**
+- `getAll()`: Lista todas as salas disponíveis
+- `getById(id)`: Recupera sala específica por ID
+- `filter({ capacity, resources })`: Filtra salas por capacidade e recursos
+- `create(roomData)`: Cria nova sala (apenas admin)
+- `update(id, roomData)`: Atualiza dados da sala (apenas admin)
+- `delete(id)`: Remove sala do sistema (apenas admin)
+
+**Funcionalidades Especiais:**
+- **Filtro por Capacidade**: Permite buscar salas com capacidade mínima/máxima
+- **Filtro por Recursos**: Busca salas que possuem recursos específicos
+- **Dados Pré-carregados**: Inclui salas reais do INTELI (R01-R10, C01-C04, etc.)
+
+**3. Booking Model (BookingManager)**
+
+Núcleo do sistema, gerencia todas as reservas com validações complexas e regras de negócio.
+
+**Estrutura de Dados:**
+```javascript
+{
+  id: Number,           // Identificador único da reserva
+  userId: Number,       // ID do usuário que fez a reserva
+  roomId: Number,       // ID da sala reservada
+  date: String,         // Data da reserva (YYYY-MM-DD)
+  startTime: String,    // Horário de início (HH:MM)
+  endTime: String,      // Horário de término (HH:MM)
+  purpose: String,      // Finalidade da reserva
+  attendees: Number,    // Número de participantes
+  status: String,       // Status ('confirmed', 'cancelled', 'completed')
+  createdAt: Date      // Data de criação
+}
+```
+
+**Métodos Principais:**
+- `create(bookingData)`: Cria nova reserva com validações completas
+- `getByUser(userId)`: Lista reservas de um usuário específico
+- `getByRoom(roomId)`: Lista reservas de uma sala específica
+- `getByDate(date)`: Lista reservas de uma data específica
+- `checkAvailability(roomId, date, startTime, endTime)`: Verifica disponibilidade
+- `hasActiveBookingOnDate(userId, date)`: Verifica se usuário já tem reserva na data
+- `update(id, bookingData)`: Atualiza reserva com revalidação
+- `cancel(id)`: Cancela reserva e move para histórico
+
+**Validações e Regras de Negócio:**
+- **Conflito de Horários**: Impede sobreposição de reservas na mesma sala
+- **Uma Reserva por Dia**: Usuário pode ter apenas uma reserva ativa por data
+- **Capacidade da Sala**: Número de participantes não pode exceder capacidade
+- **Horário Válido**: Horário de fim deve ser posterior ao de início
+- **Data Futura**: Não permite reservas em datas passadas
+
+**4. BookingHistory Model (BookingHistoryManager)**
+
+Mantém histórico completo de todas as reservas finalizadas ou canceladas, garantindo rastreabilidade.
+
+**Estrutura de Dados:**
+```javascript
+{
+  id: Number,                    // Identificador único do histórico
+  originalBookingId: Number,     // ID da reserva original
+  userId: Number,                // ID do usuário
+  roomId: Number,                // ID da sala
+  date: String,                  // Data da reserva
+  startTime: String,             // Horário de início
+  endTime: String,               // Horário de término
+  purpose: String,               // Finalidade da reserva
+  attendees: Number,             // Número de participantes
+  status: String,                // Status final ('completed', 'cancelled')
+  expiredAt: Date,               // Quando a reserva expirou
+  movedToHistoryAt: Date        // Quando foi movida para histórico
+}
+```
+
+**Métodos Principais:**
+- `getAll()`: Lista todo o histórico (apenas admin)
+- `getByUser(userId)`: Histórico de um usuário específico
+- `getByRoom(roomId)`: Histórico de uma sala específica
+- `getByDate(date)`: Histórico de uma data específica
+- `getByOriginalBooking(bookingId)`: Histórico de uma reserva específica
+- `getStats()`: Estatísticas do histórico (total, completadas, canceladas)
+- `create(historyData)`: Adiciona entrada ao histórico
+
+**Funcionalidades Especiais:**
+- **Rastreabilidade Completa**: Mantém todos os dados originais da reserva
+- **Timestamps Detalhados**: Registra quando expirou e quando foi movida
+- **Estatísticas**: Fornece métricas para análise de uso
+- **Enriquecimento de Dados**: Adiciona informações de sala e usuário automaticamente
+
+#### 3.1.1.3 Padrões e Boas Práticas Implementadas
+
+**1. Entity Manager Pattern**
+Todos os modelos herdam de uma classe base `EntityManager` que fornece operações CRUD padronizadas:
+
+```javascript
+class EntityManager {
+  constructor(db, entityName) {
+    this.db = db;
+    this.entityName = entityName;
+    this.filePath = path.join(db.dataDir, `${entityName}.json`);
+  }
+
+  getAll() { /* Implementação genérica */ }
+  getById(id) { /* Implementação genérica */ }
+  create(data) { /* Implementação genérica */ }
+  update(id, data) { /* Implementação genérica */ }
+  delete(id) { /* Implementação genérica */ }
+}
+```
+
+**2. Data Validation**
+- Validação de tipos de dados
+- Verificação de campos obrigatórios
+- Validação de regras de negócio específicas
+- Sanitização de entrada de dados
+
+**3. Error Handling**
+- Tratamento consistente de erros
+- Mensagens de erro descritivas
+- Logging de erros para debugging
+- Retorno de códigos HTTP apropriados
+
+**4. Data Integrity**
+- Verificação de integridade referencial
+- Prevenção de estados inconsistentes
+- Transações atômicas (simuladas)
+- Backup automático de dados
 
 ### 3.2. Arquitetura
 
-*Posicione aqui o diagrama de arquitetura da sua solução de aplicação web. Atualize sempre que necessário.*
+O Sistema de Reservas INTELI foi desenvolvido seguindo rigorosamente o padrão arquitetural **MVC (Model-View-Controller)**, garantindo separação clara de responsabilidades, manutenibilidade e escalabilidade. A arquitetura implementada promove baixo acoplamento entre as camadas e alta coesão dentro de cada componente.
 
-**Instruções para criação do diagrama de arquitetura**  
-- **Model**: A camada que lida com a lógica de negócios e interage com o banco de dados.
-- **View**: A camada responsável pela interface de usuário.
-- **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
+#### 3.2.1 Visão Geral da Arquitetura
 
-<br>
+A aplicação segue uma arquitetura em camadas bem definidas, onde cada camada tem responsabilidades específicas e se comunica com as outras através de interfaces bem estabelecidas:
 
-### 3.1.1 BD e Models (Semana 5)
-*Descreva aqui os Models implementados no sistema web*
+```mermaid
+graph TB
+    %% Camada de Apresentação (View)
+    subgraph "VIEW LAYER"
+        Views[Views - EJS Templates]
+        Views --> LoginView[login.ejs]
+        Views --> DashboardView[index.ejs]
+        Views --> RoomsView[rooms.ejs]
+        Views --> BookingsView[bookings.ejs]
+        Views --> BookingDetailsView[booking-details.ejs]
+        Views --> Partials[partials/header.ejs<br/>partials/footer.ejs]
+    end
 
-### 3.2. Arquitetura (Semana 5)
+    %% Camada de Controle (Controller)
+    subgraph "CONTROLLER LAYER"
+        Controllers[Controllers]
+        Controllers --> AuthController[Auth Controller<br/>- register()<br/>- login()<br/>- verifyToken()]
+        Controllers --> RoomController[Room Controller<br/>- getAll()<br/>- getById()<br/>- filter()]
+        Controllers --> BookingController[Booking Controller<br/>- create()<br/>- getByUser()<br/>- cancel()]
+        Controllers --> HistoryController[History Controller<br/>- getAll()<br/>- getByUser()]
+    end
 
-*Posicione aqui o diagrama de arquitetura da sua solução de aplicação web. Atualize sempre que necessário.*
+    %% Camada de Modelo (Model)
+    subgraph "MODEL LAYER"
+        Database[Database.js<br/>Singleton Manager]
+        Database --> UserManager[User Manager<br/>- Authentication<br/>- User CRUD]
+        Database --> RoomManager[Room Manager<br/>- Room CRUD<br/>- Filtering]
+        Database --> BookingManager[Booking Manager<br/>- Booking CRUD<br/>- Availability Check]
+        Database --> HistoryManager[History Manager<br/>- History CRUD<br/>- Statistics]
+    end
 
-**Instruções para criação do diagrama de arquitetura**  
-- **Model**: A camada que lida com a lógica de negócios e interage com o banco de dados.
-- **View**: A camada responsável pela interface de usuário.
-- **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
-  
-*Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
+    %% Camada de Persistência
+    subgraph "PERSISTENCE LAYER"
+        DataFiles[JSON Data Files]
+        DataFiles --> UsersJSON[users.json]
+        DataFiles --> RoomsJSON[rooms.json]
+        DataFiles --> BookingsJSON[bookings.json]
+        DataFiles --> HistoryJSON[history.json]
+    end
+
+    %% Middlewares e Serviços
+    subgraph "MIDDLEWARE & SERVICES"
+        AuthMiddleware[Authentication<br/>Middleware]
+        ExpirationService[Booking Expiration<br/>Service]
+        Routes[Express Routes<br/>API & Web]
+    end
+
+    %% Fluxo de Dados
+    Views -.->|HTTP Requests| Routes
+    Routes -->|Route to| Controllers
+    Controllers -->|Business Logic| Database
+    Database -->|Data Access| DataFiles
+
+    %% Middleware Integration
+    Routes -->|Authentication| AuthMiddleware
+    Controllers -->|Auto Expiration| ExpirationService
+
+    %% Response Flow
+    DataFiles -.->|Data| Database
+    Database -.->|Processed Data| Controllers
+    Controllers -.->|Response Data| Views
+```
+
+#### 3.2.2 Detalhamento das Camadas
+
+**CAMADA MODEL (Modelo)**
+
+A camada Model é responsável pela lógica de negócio e acesso aos dados, implementada através de gerenciadores especializados:
+
+**Responsabilidades:**
+- Encapsular regras de negócio específicas do domínio
+- Gerenciar persistência e recuperação de dados
+- Validar integridade e consistência dos dados
+- Implementar operações CRUD para cada entidade
+- Manter estado da aplicação
+
+**Componentes Principais:**
+
+1. **Database.js (Singleton Manager)**
+   - Ponto central de acesso aos dados
+   - Inicialização e configuração do sistema de persistência
+   - Coordenação entre diferentes gerenciadores de entidade
+   - Garantia de integridade referencial
+
+2. **UserManager**
+   - Autenticação e autorização de usuários
+   - Criptografia de senhas com bcrypt
+   - Validação de emails institucionais
+   - Gerenciamento de perfis e roles
+
+3. **RoomManager**
+   - Gerenciamento de salas e recursos
+   - Filtros avançados por capacidade e recursos
+   - Validação de dados de salas
+   - Manutenção de catálogo de salas do INTELI
+
+4. **BookingManager**
+   - Lógica complexa de reservas
+   - Verificação de disponibilidade em tempo real
+   - Validação de conflitos de horário
+   - Regras de negócio (uma reserva por usuário por dia)
+   - Processamento de expiração automática
+
+5. **BookingHistoryManager**
+   - Manutenção de histórico completo
+   - Rastreabilidade de alterações
+   - Geração de estatísticas e relatórios
+   - Arquivamento de reservas finalizadas
+
+**CAMADA CONTROLLER (Controlador)**
+
+Os Controllers atuam como intermediários entre as Views e Models, processando requisições e coordenando respostas:
+
+**Responsabilidades:**
+- Receber e processar requisições HTTP
+- Validar dados de entrada
+- Coordenar chamadas aos Models apropriados
+- Formatar respostas para as Views
+- Implementar lógica de autorização
+- Tratamento de erros e exceções
+
+**Componentes Principais:**
+
+1. **AuthController**
+   ```javascript
+   class AuthController {
+     static async register(req, res) {
+       // Validação de dados
+       // Criptografia de senha
+       // Criação de usuário via UserManager
+       // Geração de JWT token
+       // Resposta formatada
+     }
+
+     static async login(req, res) {
+       // Validação de credenciais
+       // Verificação de senha
+       // Geração de token JWT
+       // Resposta com dados do usuário
+     }
+   }
+   ```
+
+2. **RoomController**
+   ```javascript
+   class RoomController {
+     static async getAll(req, res) {
+       // Recuperação de todas as salas
+       // Formatação de resposta
+     }
+
+     static async filter(req, res) {
+       // Processamento de filtros
+       // Chamada ao RoomManager
+       // Retorno de salas filtradas
+     }
+   }
+   ```
+
+3. **BookingController**
+   ```javascript
+   class BookingController {
+     static async create(req, res) {
+       // Validação de dados da reserva
+       // Verificação de disponibilidade
+       // Criação via BookingManager
+       // Resposta de confirmação
+     }
+
+     static async cancel(req, res) {
+       // Verificação de permissões
+       // Cancelamento da reserva
+       // Movimentação para histórico
+     }
+   }
+   ```
+
+**CAMADA VIEW (Visão)**
+
+A camada View é responsável pela apresentação dos dados e interação com o usuário:
+
+**Responsabilidades:**
+- Renderização de templates EJS
+- Apresentação de dados formatados
+- Captura de entrada do usuário
+- Implementação de interface responsiva
+- Validação client-side
+- Feedback visual para o usuário
+
+**Componentes Principais:**
+
+1. **Templates EJS**
+   - `login.ejs`: Interface de autenticação
+   - `index.ejs`: Dashboard principal
+   - `rooms.ejs`: Listagem e filtros de salas
+   - `bookings.ejs`: Gerenciamento de reservas
+   - `booking-details.ejs`: Detalhes de reserva específica
+
+2. **Partials Reutilizáveis**
+   - `header.ejs`: Navegação e branding
+   - `footer.ejs`: Informações institucionais
+
+3. **Assets Estáticos**
+   - CSS customizado seguindo Design System INTELI
+   - JavaScript para interatividade
+   - Imagens e recursos visuais
+
+#### 3.2.3 Fluxo de Dados na Arquitetura
+
+**1. Requisição do Usuário (Request Flow)**
+```
+User Action → HTTP Request → Express Routes → Middleware → Controller → Model → Database
+```
+
+**2. Processamento e Resposta (Response Flow)**
+```
+Database → Model → Controller → View Template → HTTP Response → User Interface
+```
+
+**3. Exemplo Prático - Criação de Reserva:**
+
+1. **View**: Usuário preenche formulário de reserva
+2. **Route**: `POST /api/bookings` captura requisição
+3. **Middleware**: Verifica autenticação JWT
+4. **Controller**: `BookingController.create()` processa dados
+5. **Model**: `BookingManager` valida disponibilidade
+6. **Database**: Persiste nova reserva em `bookings.json`
+7. **Response**: Controller retorna confirmação
+8. **View**: Interface atualiza com feedback visual
+
+#### 3.2.4 Padrões Arquiteturais Implementados
+
+**1. Singleton Pattern**
+- `Database.js` garante única instância de acesso aos dados
+- Evita inconsistências e conflitos de acesso
+
+**2. Factory Pattern**
+- Gerenciadores de entidade criados dinamicamente
+- Facilita extensão para novas entidades
+
+**3. Middleware Pattern**
+- Autenticação JWT como middleware
+- Logging e tratamento de erros centralizados
+
+**4. Repository Pattern**
+- Cada Manager atua como repository para sua entidade
+- Abstrai detalhes de persistência
+
+**5. Service Layer Pattern**
+- `BookingExpirationService` para lógica especializada
+- Separação de responsabilidades complexas
+
+#### 3.2.5 Benefícios da Arquitetura Implementada
+
+**Manutenibilidade:**
+- Separação clara de responsabilidades
+- Código modular e reutilizável
+- Facilidade para debugging e testes
+
+**Escalabilidade:**
+- Fácil adição de novas funcionalidades
+- Possibilidade de migração para microserviços
+- Suporte a diferentes tipos de persistência
+
+**Testabilidade:**
+- Cada camada pode ser testada independentemente
+- Mocks e stubs facilmente implementáveis
+- Cobertura de testes abrangente
+
+**Flexibilidade:**
+- Mudanças em uma camada não afetam as outras
+- Diferentes implementações de persistência
+- Adaptação a novos requisitos
 
 <br>
 
@@ -570,66 +1031,157 @@ Para Cleber, que "ama usar as salas de reunião" e busca eficiência, a capacida
 
 ### 3.4. Guia de estilos
 
-Este guia de estilos documenta os padrões visuais e de interface utilizados no desenvolvimento do protótipo de alta fidelidade para o Sistema de Reservas de Salas do INTELI. O objetivo é garantir a consistência visual, a usabilidade e o alinhamento com a identidade da marca INTELI em todas as telas e interações da aplicação. As diretrizes aqui apresentadas devem ser seguidas para futuras implementações e manutenções no sistema, assegurando uma experiência de usuário coesa e profissional.
+Este guia de estilos documenta os padrões visuais e de interface implementados no Sistema de Reservas de Salas do INTELI. O objetivo é garantir a consistência visual, a usabilidade e o alinhamento com a identidade da marca INTELI em todas as telas e interações da aplicação. As diretrizes aqui apresentadas foram completamente implementadas no arquivo `/public/css/inteli-theme.css` e devem ser seguidas para futuras implementações e manutenções no sistema, assegurando uma experiência de usuário coesa e profissional.
 
-Segue abaixo o link para vizualizar o Guia de Estilos do Projeto pelo Figma:
-https://www.figma.com/design/VBYW8IRVczYxLrPUcWJPzo/Guia-de-Estilos---Sistema-Reservas?node-id=0-1&t=x4IggeadPMbVCyHL-1
+O sistema implementa fielmente o Design System oficial do INTELI através de variáveis CSS organizadas e componentes padronizados, garantindo total consistência visual em toda a aplicação.
 
 **Layout Geral**
 
-O layout da aplicação foi estruturado para oferecer clareza e facilidade de navegação. Adota-se um design limpo, com amplo uso de espaço em branco para separar visualmente os elementos e melhorar a legibilidade. O conteúdo principal é geralmente centralizado ou contido dentro de seções bem definidas, utilizando cards com cantos arredondados e sombras sutis para agrupar informações relacionadas, como visto nas telas de listagem de salas e reservas. As margens e espaçamentos seguem um padrão consistente para criar um ritmo visual equilibrado. O cabeçalho e o rodapé são fixos em algumas visualizações, proporcionando acesso constante à navegação principal e informações institucionais. A estrutura geral busca adaptabilidade, embora a análise detalhada de responsividade não tenha sido o foco nesta fase de prototipagem.
+O layout da aplicação foi estruturado para oferecer clareza e facilidade de navegação, seguindo rigorosamente os princípios do Design System INTELI. Adota-se um design limpo, com amplo uso de espaço em branco para separar visualmente os elementos e melhorar a legibilidade. O conteúdo principal é centralizado ou contido dentro de seções bem definidas, utilizando cards com cantos arredondados (`border-radius: 1rem`) e sombras sutis (`box-shadow: 0 1px 2px rgba(0,0,0,0.05)`) para agrupar informações relacionadas.
+
+As margens e espaçamentos seguem um sistema consistente baseado em variáveis CSS:
+- `--spacing-xs: 0.25rem` (4px)
+- `--spacing-sm: 0.5rem` (8px)
+- `--spacing-md: 1rem` (16px)
+- `--spacing-lg: 1.5rem` (24px)
+- `--spacing-xl: 2rem` (32px)
+
+O cabeçalho possui posição sticky com fundo roxo INTELI e padrão sutil de pontos conforme manual da marca (`background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)`). A estrutura é completamente responsiva, adaptando-se a diferentes dispositivos através de breakpoints bem definidos.
 
 **Tipografia**
 
-A tipografia desempenha um papel crucial na hierarquia visual e na legibilidade da interface, seguindo as diretrizes do Manual da Marca INTELI. Duas fontes principais são empregadas:
+A tipografia implementada segue exatamente as diretrizes do Manual da Marca INTELI, utilizando as fontes oficiais importadas via Google Fonts:
 
-1.  **Space Mono Bold:** Utilizada para títulos principais (H1, H2), chamadas de destaque e elementos que necessitam de maior ênfase visual, como o título "Bem-vindo ao Sistema de Reservas INTELI" na tela inicial ou os nomes das salas nos cards. Sua natureza monoespaçada e peso bold conferem um caráter moderno e tecnológico, alinhado à identidade do INTELI.
-2.  **Manrope Normal:** Empregada para todo o texto corrido, descrições, labels de formulários, itens de menu, texto de botões e informações complementares. Sua excelente legibilidade em diversos tamanhos e pesos garante conforto na leitura de conteúdos mais extensos e clareza em elementos de interface.
+1.  **Space Mono Bold (`--font-secondary`):** Implementada para títulos principais (H1-H6), chamadas de destaque e elementos que necessitam de maior ênfase visual. Aplicada através da classe `.inteli-title` e automaticamente em todos os headings. Sua natureza monoespaçada e peso bold (700) conferem caráter moderno e tecnológico, perfeitamente alinhado à identidade do INTELI.
 
-Os tamanhos e pesos das fontes variam para estabelecer a hierarquia visual. Títulos principais são maiores e em bold (Space Mono), enquanto subtítulos e textos descritivos utilizam tamanhos menores e peso regular (Manrope). Labels e textos de botões também utilizam Manrope, geralmente em peso regular ou semi-bold, com tamanho adequado para leitura e interação.
+2.  **Manrope Normal (`--font-primary`):** Implementada para todo o texto corrido, descrições, labels de formulários, itens de menu, texto de botões e informações complementares através da classe `.inteli-text`. Disponível em múltiplos pesos (200-800) garantindo flexibilidade tipográfica e excelente legibilidade.
+
+**Sistema de Tamanhos Implementado:**
+- `--font-size-xs: 0.75rem` (12px)
+- `--font-size-sm: 0.875rem` (14px)
+- `--font-size-base: 1rem` (16px)
+- `--font-size-lg: 1.125rem` (18px)
+- `--font-size-xl: 1.25rem` (20px)
+- `--font-size-2xl: 1.5rem` (24px)
+- `--font-size-3xl: 1.875rem` (30px)
+- `--font-size-4xl: 2.25rem` (36px)
+
+A hierarquia visual é estabelecida através de tamanhos progressivos, com títulos principais utilizando Space Mono Bold em tamanhos maiores e textos descritivos em Manrope Normal com tamanhos apropriados para cada contexto.
 
 **Cores**
 
-A paleta de cores é fundamental para a identidade visual do sistema e segue o Manual da Marca INTELI, complementada por cores funcionais para estados e feedback.
+A paleta de cores implementada segue rigorosamente o Manual da Marca INTELI, sendo definida através de variáveis CSS organizadas no arquivo `inteli-theme.css`. Todas as cores são aplicadas consistentemente em toda a aplicação, garantindo identidade visual marcante e funcionalidade adequada.
 
-*   **Cores Primárias (INTELI):**
-    *   **Roxo Inteli (#2e2640):** Amplamente utilizado em fundos principais, cabeçalhos e rodapés, conferindo sobriedade e identidade visual marcante.
-    *   **Coral Inteli (#ff4545):** Cor de destaque principal, usada em botões de ação primária (Call-to-Action) como "Reservar Agora", "Entrar", "Nova Reserva", e para indicar o item ativo na navegação principal.
-    *   **Lilás Inteli (#855ede):** Utilizado em elementos gráficos de apoio e ícones, como visto nos cards da tela principal.
-    *   **Azul Inteli (#1426ab):** Aplicado em botões primários alternativos (como "Atualizar Perfil", "Reservar Sala") e em cabeçalhos de seções dentro de cards, oferecendo um contraste forte e profissional.
-    *   **Cinza Inteli (#cccfd1):** Usado para bordas sutis, divisores e fundos de elementos secundários.
-*   **Cores Secundárias (INTELI):**
-    *   **Laranja Inteli (#ff8245):** Pode ser usado para alertas ou destaques secundários (não proeminente nas telas fornecidas).
-    *   **Cinza Escuro Inteli (#878a96):** Utilizado para texto secundário, descrições e placeholders, garantindo legibilidade sem competir com informações primárias.
-    *   **Violeta Inteli (#4a17ab):** Cor de apoio para elementos gráficos ou fundos secundários.
-    *   **Azul Royal Inteli (#124aed):** Aplicado em ícones e elementos gráficos, como nos cards da tela principal.
-*   **Cores Neutras:**
-    *   **Branco (#FFFFFF):** Usado extensivamente para texto sobre fundos escuros (Roxo, Azul) e como fundo principal de cards e seções de conteúdo, proporcionando contraste e clareza.
-    *   **Preto/Cinzas Escuros:** Utilizados para texto principal sobre fundos claros.
-*   **Cores Funcionais/Status:**
-    *   **Verde:** Utilizado para indicar status positivos como "Disponível" e "Confirmada" (e.g., `#28a745` ou similar).
-    *   **Vermelho:** Utilizado para indicar status de alerta ou negativo como "Ocupada" e em botões de ação destrutiva como "Cancelar" ou "Apagar Histórico" (e.g., `#dc3545` ou similar).
-    *   **Azul Claro:** Usado como fundo para caixas de informação ou dicas, como nas "Regras de Reserva".
+**Cores Primárias INTELI (Implementadas):**
+- **Roxo INTELI (`--inteli-roxo: #2e2640`):** Implementado como cor principal em fundos de cabeçalho (`.inteli-header`), rodapés, cards de destaque (`.inteli-card-primary`) e elementos de navegação. Confere sobriedade e identidade visual marcante em toda a aplicação.
+- **Coral INTELI (`--inteli-coral: #ff4545`):** Implementado como cor de destaque principal em botões primários (`.btn-inteli-primary`), links ativos, call-to-actions e elementos de ação como "Reservar Agora", "Confirmar Reserva" e "Entrar".
+- **Lilás INTELI (`--inteli-lilas: #855ede`):** Implementado em ícones de apoio, elementos gráficos decorativos, cards de funcionalidades (`.inteli-card-graphic`) e destaques visuais secundários.
+- **Azul INTELI (`--inteli-azul: #1426ab`):** Implementado em botões alternativos, cabeçalhos de cards (`.inteli-card-header`), links secundários e elementos de navegação interna, oferecendo contraste profissional.
+- **Cinza INTELI (`--inteli-cinza: #cccfd1`):** Implementado para bordas sutis, divisores, fundos de elementos secundários e estados desabilitados de componentes.
+
+**Cores Secundárias INTELI (Implementadas):**
+- **Laranja INTELI (`--inteli-laranja: #ff8245`):** Implementado para alertas de aviso (`.inteli-alert-warning`), notificações secundárias e elementos de destaque moderado.
+- **Cinza Escuro INTELI (`--inteli-cinza-escuro: #878a96`):** Implementado para texto secundário, descrições, placeholders de formulários e informações complementares, garantindo hierarquia visual clara.
+- **Violeta INTELI (`--inteli-violeta: #4a17ab`):** Implementado em elementos gráficos auxiliares, fundos de apoio e componentes decorativos específicos.
+- **Azul Royal INTELI (`--inteli-azul-royal: #124aed`):** Implementado em ícones destacados, elementos gráficos especiais e componentes de interface específicos.
+
+**Cores Neutras (Implementadas):**
+- **Branco (`--inteli-branco: #FFFFFF`):** Implementado extensivamente como fundo principal de cards, modais, formulários e texto sobre fundos escuros, garantindo contraste e legibilidade ótimos.
+- **Preto (`--inteli-preto: #000000`):** Implementado para texto principal sobre fundos claros, garantindo máximo contraste e legibilidade.
+
+**Cores Funcionais/Status (Implementadas):**
+- **Verde (`--inteli-verde: #28a745`):** Implementado para status positivos como "Disponível", "Confirmada", alertas de sucesso (`.inteli-alert-success`) e feedback positivo.
+- **Vermelho (`--inteli-vermelho: #dc3545`):** Implementado para status negativos como "Ocupada", botões destrutivos como "Cancelar", alertas de erro (`.inteli-alert-danger`) e validações de formulário.
+- **Azul Claro (`--inteli-azul-claro: #e3f2fd`):** Implementado como fundo para caixas informativas (`.inteli-alert-info`), dicas de uso e seções de ajuda.
 
 **Botões**
 
-Os botões são componentes essenciais de interação e seguem um padrão visual claro para indicar sua função e hierarquia:
+Os botões implementados no sistema seguem um padrão visual rigoroso e hierárquico, com todos os estados visuais completamente definidos através de classes CSS específicas:
 
-*   **Botões Primários:** Apresentam fundo sólido utilizando as cores Coral Inteli (#ff4545) ou Azul Inteli (#1426ab), com texto em branco (Manrope). Possuem cantos arredondados e, frequentemente, incluem um ícone à direita (como uma seta) para reforçar a ação. São usados para as ações mais importantes da tela (e.g., "Reservar Agora", "Entrar", "Salvar").
-*   **Botões Secundários:** Possuem fundo branco, borda sólida (geralmente Cinza Escuro ou Coral para ações destrutivas como "Cancelar") e texto na cor da borda ou em Cinza Escuro. Também apresentam cantos arredondados. São utilizados para ações alternativas ou menos prioritárias (e.g., "Detalhes", "Ver Salas", "Cancelar").
-*   **Botões Terciários/Links:** Apresentados como texto simples, geralmente na cor Azul Inteli ou Lilás Inteli, para ações como "Esqueci minha senha" ou navegação secundária. Podem ter um sublinhado no estado de hover (não visível nas imagens estáticas).
+**Botões Primários (`.btn-inteli-primary`):**
+- **Aparência:** Fundo sólido Coral INTELI (`--inteli-coral: #ff4545`), texto branco Manrope (peso 500), cantos arredondados (`border-radius: 0.5rem`), sombra sutil (`box-shadow: 0 1px 2px rgba(0,0,0,0.05)`)
+- **Funcionalidade:** Utilizados para ações principais como "Reservar Agora", "Entrar", "Confirmar Reserva", "Salvar"
+- **Estados Implementados:**
+  - **Normal:** Fundo coral, texto branco
+  - **Hover:** Fundo muda para azul INTELI (`--inteli-azul`), elevação visual (`transform: translateY(-2px)`)
+  - **Active:** Retorna à posição original (`transform: translateY(0)`)
+  - **Disabled:** Fundo cinza (`--inteli-cinza`), texto cinza escuro, cursor `not-allowed`
 
-É crucial definir e implementar os estados visuais para todos os botões (normal, hover, pressionado, desabilitado) para fornecer feedback adequado ao usuário durante a interação.
+**Botões Secundários (`.btn-inteli-secondary`):**
+- **Aparência:** Fundo branco, borda sólida coral (2px), texto coral, cantos arredondados, display flex com ícones
+- **Funcionalidade:** Utilizados para ações alternativas como "Cancelar", "Ver Detalhes", "Voltar"
+- **Estados Implementados:**
+  - **Normal:** Fundo branco, borda e texto coral
+  - **Hover:** Fundo coral, texto branco, elevação visual
+  - **Active:** Retorna à posição original
+  - **Disabled:** Borda e texto cinza, sem interatividade
+
+**Botões Terciários/Links (`.btn-inteli-link`):**
+- **Aparência:** Texto simples em azul INTELI ou lilás INTELI, sem fundo ou borda
+- **Funcionalidade:** Navegação secundária, "Esqueci minha senha", links auxiliares
+- **Estados Implementados:**
+  - **Normal:** Texto colorido sem decoração
+  - **Hover:** Sublinhado automático, mudança de cor
+  - **Active:** Feedback visual sutil
+
+**Botões Destrutivos (`.btn-inteli-danger`):**
+- **Aparência:** Fundo vermelho funcional (`--inteli-vermelho`), texto branco
+- **Funcionalidade:** Ações destrutivas como "Cancelar Reserva", "Excluir"
+- **Estados:** Todos os estados visuais implementados com cores apropriadas
+
+**Características Técnicas Implementadas:**
+- **Transições:** `transition: all 0.3s ease` em todos os botões
+- **Flexbox:** `display: inline-flex` com `align-items: center` e `gap: 0.5rem` para ícones
+- **Acessibilidade:** Contraste adequado, estados de foco visíveis
+- **Responsividade:** Adaptação automática em dispositivos móveis
 
 **Assets**
 
-Os assets visuais complementam a interface e reforçam a identidade da marca:
+Os assets visuais implementados complementam perfeitamente a interface e reforçam a identidade da marca INTELI de forma consistente:
 
-*   **Logotipo INTELI:** Aplicado de forma consistente no cabeçalho principal e em telas de autenticação (Login, Cadastro, Logout), seguindo as diretrizes de aplicação do manual da marca quanto a espaçamento e contraste com o fundo.
-*   **Ícones:** Utiliza-se um conjunto de ícones de estilo limpo e consistente para representar ações e informações visualmente (e.g., ícones de usuário, logout, calendário, relógio, localização, recursos de sala, olho, lixeira, mais, setas). O estilo parece alinhado com bibliotecas de ícones modernas e sólidas (como Font Awesome ou Material Icons), garantindo reconhecimento e clareza. Ícones circulares coloridos (com fundos Coral, Lilás, Azul Royal) são usados na tela principal para destacar funcionalidades.
-*   **Grafismos:** Um padrão sutil de pontos (dot pattern) é aplicado sobre fundos escuros (Roxo Inteli) em algumas telas (Principal, Login), adicionando textura visual sem comprometer a legibilidade, conforme sugerido no manual da marca para uso sutil de grafismos.
+**Logotipo INTELI:**
+- **Implementação:** Logo oficial INTELI (branca e vermelha) aplicada consistentemente através da classe `.logo-img` com `height: 50px` padronizado
+- **Localização:** Presente no cabeçalho principal (`.inteli-header`) de todas as páginas, telas de autenticação e rodapé
+- **Comportamento:** Efeito hover com `transform: scale(1.1)` e transição suave (`transition: all 0.3s ease`)
+- **Acessibilidade:** Alt text apropriado e link para página inicial
 
-Este guia fornece a base para a construção e evolução da interface do Sistema de Reservas de Salas INTELI, promovendo uma experiência de usuário consistente, agradável e alinhada à identidade visual da instituição.
+**Sistema de Ícones:**
+- **Biblioteca:** Font Awesome 6 completamente implementada para ícones limpos e modernos
+- **Ícones Principais Implementados:**
+  - `fas fa-user` - Perfil e autenticação
+  - `fas fa-door-open` - Salas e acesso
+  - `fas fa-calendar-check` - Reservas e agendamentos
+  - `fas fa-clock` - Horários e tempo
+  - `fas fa-map-marker-alt` - Localização
+  - `fas fa-tv`, `fas fa-chalkboard` - Recursos de sala
+  - `fas fa-eye`, `fas fa-edit`, `fas fa-trash` - Ações de interface
+  - `fas fa-graduation-cap` - Identidade acadêmica
+- **Estilização:** Ícones coloridos com cores INTELI (coral, lilás, azul royal) em cards funcionais
+- **Responsividade:** Tamanhos adaptativos conforme contexto
+
+**Grafismos e Padrões:**
+- **Padrão de Pontos:** Implementado via CSS no cabeçalho (`background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)`)
+- **Aplicação:** Sobre fundos roxo INTELI conforme manual da marca
+- **Funcionalidade:** Adiciona textura visual sutil sem comprometer legibilidade
+- **Responsividade:** `background-size: 20px 20px` para consistência visual
+
+**Cards e Componentes Visuais:**
+- **Cards Implementados:** `.inteli-card` com variações (primary, action, graphic)
+- **Sombras:** Sistema de sombras progressivas (`--shadow-sm` a `--shadow-xl`)
+- **Bordas:** Cantos arredondados consistentes (`--radius-md: 0.5rem` a `--radius-xl: 1rem`)
+- **Hover Effects:** Elevação visual (`transform: translateY(-4px)`) e mudança de sombra
+
+**Sistema de Espaçamentos:**
+- **Implementação:** Variáveis CSS para espaçamentos consistentes
+- **Aplicação:** Margens, paddings e gaps padronizados em toda a interface
+- **Responsividade:** Adaptação automática em breakpoints móveis
+
+**Componentes de Status:**
+- **Alertas:** `.inteli-alert-success`, `.inteli-alert-danger`, `.inteli-alert-warning`, `.inteli-alert-info`
+- **Badges:** Status de salas (disponível/ocupada) com cores funcionais
+- **Indicadores:** Feedback visual para estados de reserva
+
+Este guia implementado fornece a base sólida e completamente funcional para a interface do Sistema de Reservas de Salas INTELI, garantindo uma experiência de usuário consistente, profissional e totalmente alinhada à identidade visual da instituição através de código CSS organizado e reutilizável.
 
 
 ### 3.5. Protótipo de alta fidelidade
@@ -783,11 +1335,29 @@ A seguir é apresentado as telas que compõem o protótipo de alta fidelidade do
 
 Este conjunto de telas representa a interface visual final proposta para o sistema, servindo como guia para o desenvolvimento front-end e garantindo uma experiência de usuário consistente e alinhada aos objetivos do projeto e à identidade do INTELI.
 
-### 3.6. WebAPI e endpoints 
+### 3.6. WebAPI e endpoints
 
-## 3.6.1 Arquitetura:
+## 3.6.1 Arquitetura Implementada:
 
-Nesta seção, é apresentada a arquitetura Model-View-Controller (MVC) adotada para o desenvolvimento do sistema de Reserva de Salas do INTELI. A escolha por esta arquitetura foi fundamentada na sua capacidade de promover a separação de responsabilidades, facilitando a manutenção, escalabilidade e organização do código. O diagrama a seguir ilustra a estrutura implementada, detalhando os componentes e o fluxo de interação entre eles.
+O Sistema de Reservas INTELI implementa uma arquitetura RESTful robusta baseada no padrão Model-View-Controller (MVC), utilizando Node.js com Express.js como framework principal. A API foi desenvolvida seguindo os princípios REST, com separação clara entre rotas de API (`/api/*`) e rotas web (`/*`), garantindo flexibilidade para diferentes tipos de clientes.
+
+**Estrutura de Rotas Implementada:**
+
+A aplicação organiza suas rotas em dois grupos principais:
+- **Rotas Web** (`routes/webRoutes.js`): Renderizam páginas EJS para interface do usuário
+- **Rotas API** (`routes/index.js`): Fornecem endpoints RESTful para comunicação programática
+
+**Organização Modular:**
+- `routes/authRoutes.js`: Endpoints de autenticação JWT
+- `routes/roomRoutes.js`: Gerenciamento de salas
+- `routes/bookingRoutes.js`: Sistema de reservas
+- `routes/bookingHistoryRoutes.js`: Histórico de reservas
+- `routes/userRoutes.js`: Gerenciamento de usuários
+
+**Middlewares de Segurança:**
+- **Autenticação JWT**: Middleware `authenticate` para proteção de rotas
+- **Autorização**: Middleware `isAdmin` para operações administrativas
+- **Validação**: Validação de dados de entrada em todos os endpoints
 
 <div align="center">
 <sub>Figura 10 - Diagrama de Arquitetura MVC - Sistema de Reserva de Salas INTELI
@@ -913,153 +1483,401 @@ A adoção da arquitetura MVC demonstrou ser uma decisão acertada para o desenv
 
 Foi possível desenvolver e testar cada componente de forma relativamente independente, agilizando o processo. A estrutura facilitou a identificação e correção de erros, bem como a implementação de novas funcionalidades. Observou-se que a comunicação bem definida entre as camadas, gerenciada pelos Controllers, minimizou o acoplamento entre os componentes, tornando o sistema mais robusto e flexível a futuras modificações ou expansões, como a integração com outros sistemas do INTELI ou a adição de novos tipos de recursos e regras de reserva.
 
-## 3.6.2 WebAPI e Endpoints:
+## 3.6.2 WebAPI e Endpoints Implementados:
 
-Nesta seção, são descritos detalhadamente os endpoints da WebAPI desenvolvida para o sistema de Reserva de Salas do INTELI. A API foi projetada seguindo os princípios RESTful, utilizando JSON como formato de intercâmbio de dados e verbos HTTP padrão para representar as operações sobre os recursos. A estruturação dos endpoints busca oferecer uma interface clara e consistente para a interação programática com as funcionalidades do sistema, como gerenciamento de usuários, salas e reservas.
+Esta seção documenta detalhadamente todos os endpoints da WebAPI implementada no Sistema de Reservas INTELI. A API segue rigorosamente os princípios RESTful, utilizando JSON como formato de intercâmbio de dados e implementando autenticação JWT para segurança. Todos os endpoints descritos estão funcionais e testados.
 
----
+**Design e Implementação da API**
 
-**Contextualização e Design da API**
+A API implementada serve como núcleo de comunicação entre o frontend EJS e a lógica de negócios, além de permitir integrações futuras. A segurança é garantida através de middlewares de autenticação JWT e autorização baseada em roles. A organização modular facilita manutenção e extensibilidade.
 
-A API foi concebida como o núcleo de comunicação entre o frontend (ou qualquer outro cliente) e a lógica de negócios do sistema. Foi dada atenção à segurança, com a implementação de autenticação baseada em JSON Web Tokens (JWT) para proteger rotas sensíveis e garantir que apenas usuários autorizados possam realizar determinadas operações. A organização dos endpoints foi feita por recurso (usuários, salas, reservas, autenticação), facilitando a compreensão e o uso da API. A seguir, cada conjunto de endpoints é apresentado com sua respectiva funcionalidade, método HTTP, URL, parâmetros esperados e exemplos de respostas.
+**Estrutura Base da API:**
+- **URL Base**: `http://localhost:3000/api`
+- **Formato**: JSON para todas as requisições e respostas
+- **Autenticação**: JWT Bearer Token
+- **Versionamento**: Preparado para futuras versões
 
 ---
 
 #### Endpoints de Autenticação (`/api/auth`)
 
-Estes endpoints são responsáveis pelo registro, login e gerenciamento de sessão dos usuários.
+**Implementação**: `routes/authRoutes.js` + `controllers/AuthController.js`
 
-- **`POST /api/auth/register`**  
-  Endpoint utilizado para o registro de um novo usuário no sistema. Espera-se que o corpo da requisição contenha os dados do usuário (nome completo, email institucional, senha).  
-  **Argumentação:** A criação de usuários é fundamental para o acesso ao sistema. Este endpoint permite a auto-inscrição, facilitando a adoção da plataforma.
+**`POST /api/auth/register`**
+- **Funcionalidade**: Registro de novos usuários no sistema
+- **Corpo da Requisição**:
+  ```json
+  {
+    "name": "João Silva",
+    "email": "joao.silva@sou.inteli.edu.br",
+    "password": "senha123"
+  }
+  ```
+- **Validações Implementadas**:
+  - Email deve terminar com `@sou.inteli.edu.br` ou `@inteli.edu.br`
+  - Senha mínima de 6 caracteres
+  - Verificação de unicidade de email
+- **Resposta de Sucesso** (201):
+  ```json
+  {
+    "success": true,
+    "message": "Usuário criado com sucesso",
+    "user": { "id": 1, "name": "João Silva", "email": "joao.silva@sou.inteli.edu.br" }
+  }
+  ```
 
-- **`POST /api/auth/login`**  
-  Destinado à autenticação de usuários existentes. Requer email institucional e senha. Se válidos, um token JWT é gerado.  
-  **Argumentação:** Autenticação segura com JWT garante sessões stateless apropriadas para APIs REST.
+**`POST /api/auth/login`**
+- **Funcionalidade**: Autenticação de usuários existentes
+- **Corpo da Requisição**:
+  ```json
+  {
+    "email": "joao.silva@sou.inteli.edu.br",
+    "password": "senha123"
+  }
+  ```
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "message": "Login realizado com sucesso",
+    "user": { "id": 1, "name": "João Silva", "email": "joao.silva@sou.inteli.edu.br", "role": "user" },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
 
-- **`GET /api/auth/verify`**  
-  Verifica a validade do token JWT enviado no cabeçalho de autorização.  
-  **Argumentação:** Útil para o cliente verificar se a sessão está ativa.
+**`GET /api/auth/verify`** 🔒
+- **Funcionalidade**: Verificação de validade do token JWT
+- **Headers**: `Authorization: Bearer <token>`
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "message": "Token válido",
+    "user": { "id": 1, "email": "joao.silva@sou.inteli.edu.br", "role": "user" }
+  }
+  ```
 
-- **`GET /api/auth/profile`**  
-  Retorna os dados do perfil do usuário autenticado.  
-  **Argumentação:** Permite ao frontend exibir informações personalizadas do usuário.
+**`GET /api/auth/profile`** 🔒
+- **Funcionalidade**: Obtenção do perfil do usuário autenticado
+- **Headers**: `Authorization: Bearer <token>`
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "user": { "id": 1, "name": "João Silva", "email": "joao.silva@sou.inteli.edu.br", "role": "user", "createdAt": "2025-01-15T10:00:00.000Z" }
+  }
+  ```
 
-- **`PUT /api/auth/profile`**  
-  Atualiza os dados de perfil do usuário autenticado.  
-  **Argumentação:** Oferece ao usuário controle sobre suas informações.
-
----
-
-#### Endpoints de Usuários (`/api/users`)
-
-Gerenciam operações CRUD para os usuários. Alguns endpoints podem ser restritos a administradores.
-
-- **`POST /api/users`**  
-  Criação de usuários por administradores.  
-  **Argumentação:** Permite criação manual de contas.
-
-- **`GET /api/users`**  
-  Lista todos os usuários.  
-  **Argumentação:** Essencial para administração da plataforma.
-
-- **`GET /api/users/:id`**  
-  Detalhes de um usuário específico.  
-  **Argumentação:** Permite consulta detalhada.
-
-- **`PUT /api/users/:id`**  
-  Atualização de dados de usuário.  
-  **Argumentação:** Necessário para manutenção.
-
-- **`DELETE /api/users/:id`**  
-  Remoção de usuário.  
-  **Argumentação:** Permite gestão de contas.
+**`PUT /api/auth/profile`** 🔒
+- **Funcionalidade**: Atualização de dados do perfil
+- **Headers**: `Authorization: Bearer <token>`
+- **Corpo da Requisição**:
+  ```json
+  {
+    "name": "João Silva Santos",
+    "currentPassword": "senha123",
+    "newPassword": "novaSenha456"
+  }
+  ```
 
 ---
 
 #### Endpoints de Salas (`/api/rooms`)
 
-Gerenciam informações sobre as salas disponíveis.
+**Implementação**: `routes/roomRoutes.js` + `controllers/RoomController.js`
 
-- **`GET /api/rooms`**  
-  Lista todas as salas.  
-  **Argumentação:** Ajuda na escolha de sala.
+**`GET /api/rooms`** 🌐
+- **Funcionalidade**: Lista todas as salas disponíveis no INTELI
+- **Parâmetros de Query** (opcionais):
+  - `capacity`: Filtro por capacidade mínima
+  - `resources`: Filtro por recursos específicos
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "rooms": [
+      {
+        "id": 1,
+        "name": "R01",
+        "capacity": 20,
+        "location": "Térreo",
+        "resources": "TV, Lousa, Projetor",
+        "description": "Sala de aula padrão com recursos audiovisuais"
+      }
+    ]
+  }
+  ```
 
-- **`GET /api/rooms/:id`**  
-  Detalhes de uma sala.  
-  **Argumentação:** Consulta aprofundada.
+**`GET /api/rooms/:id`** 🌐
+- **Funcionalidade**: Detalhes de uma sala específica
+- **Parâmetros**: `id` (integer) - ID da sala
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "room": {
+      "id": 1,
+      "name": "R01",
+      "capacity": 20,
+      "location": "Térreo",
+      "resources": "TV, Lousa, Projetor",
+      "description": "Sala de aula padrão com recursos audiovisuais",
+      "createdAt": "2025-01-15T10:00:00.000Z"
+    }
+  }
+  ```
 
-- **`GET /api/rooms/capacity`**  
-  Filtra salas por capacidade (`?min=10&max=20`).  
-  **Argumentação:** Facilita busca por tamanho.
+**`GET /api/rooms/capacity`** 🌐
+- **Funcionalidade**: Filtra salas por capacidade
+- **Parâmetros de Query**:
+  - `min`: Capacidade mínima (opcional)
+  - `max`: Capacidade máxima (opcional)
+- **Exemplo**: `/api/rooms/capacity?min=10&max=30`
 
-- **`GET /api/rooms/resources`**  
-  Filtra salas por recursos (`?tv=true&whiteboard=false`).  
-  **Argumentação:** Busca por recursos específicos.
+**`GET /api/rooms/resources`** 🌐
+- **Funcionalidade**: Filtra salas por recursos disponíveis
+- **Parâmetros de Query**: Recursos específicos (TV, Projetor, etc.)
+- **Exemplo**: `/api/rooms/resources?tv=true&projetor=true`
 
-- **`POST /api/rooms`**  
-  Criação de nova sala (requer admin).  
-  **Argumentação:** Adição de espaços.
+**`POST /api/rooms`** 🔒👑
+- **Funcionalidade**: Criação de nova sala (apenas administradores)
+- **Headers**: `Authorization: Bearer <admin_token>`
+- **Corpo da Requisição**:
+  ```json
+  {
+    "name": "R11",
+    "capacity": 25,
+    "location": "1º Andar",
+    "resources": "TV, Lousa Digital, Projetor",
+    "description": "Nova sala com tecnologia avançada"
+  }
+  ```
 
-- **`PUT /api/rooms/:id`**  
-  Atualização de sala (requer admin).  
-  **Argumentação:** Correção de dados.
+**`PUT /api/rooms/:id`** 🔒👑
+- **Funcionalidade**: Atualização de dados da sala (apenas administradores)
+- **Headers**: `Authorization: Bearer <admin_token>`
+- **Parâmetros**: `id` (integer) - ID da sala
 
-- **`DELETE /api/rooms/:id`**  
-  Remoção de sala (requer admin).  
-  **Argumentação:** Gestão de disponibilidade.
+**`DELETE /api/rooms/:id`** 🔒👑
+- **Funcionalidade**: Remoção de sala (apenas administradores)
+- **Headers**: `Authorization: Bearer <admin_token>`
+- **Parâmetros**: `id` (integer) - ID da sala
 
 ---
 
 #### Endpoints de Reservas (`/api/bookings`)
 
-Gerenciam criação, consulta e modificação de reservas (autenticação obrigatória).
+**Implementação**: `routes/bookingRoutes.js` + `controllers/BookingController.js`
 
-- **`POST /api/bookings`**  
-  Criação de reserva.  
-  **Argumentação:** Funcionalidade central do sistema.
+**`POST /api/bookings`** 🔒
+- **Funcionalidade**: Criação de nova reserva (funcionalidade central do sistema)
+- **Headers**: `Authorization: Bearer <token>`
+- **Corpo da Requisição**:
+  ```json
+  {
+    "roomId": 1,
+    "date": "2025-01-20",
+    "startTime": "14:00",
+    "endTime": "16:00",
+    "purpose": "Reunião de projeto",
+    "attendees": 8
+  }
+  ```
+- **Validações Implementadas**:
+  - Verificação de disponibilidade da sala
+  - Validação de conflitos de horário
+  - Limite de uma reserva por usuário por dia
+  - Capacidade da sala vs número de participantes
+- **Resposta de Sucesso** (201):
+  ```json
+  {
+    "success": true,
+    "message": "Reserva criada com sucesso",
+    "booking": {
+      "id": 15,
+      "userId": 1,
+      "roomId": 1,
+      "date": "2025-01-20",
+      "startTime": "14:00",
+      "endTime": "16:00",
+      "purpose": "Reunião de projeto",
+      "attendees": 8,
+      "status": "confirmed",
+      "createdAt": "2025-01-15T10:30:00.000Z"
+    }
+  }
+  ```
 
-- **`GET /api/bookings`**  
-  Lista de reservas (do usuário ou todas, se admin).  
-  **Argumentação:** Visualização do histórico.
+**`GET /api/bookings`** 🔒
+- **Funcionalidade**: Lista reservas do usuário (ou todas se admin)
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros de Query** (opcionais):
+  - `status`: Filtro por status (confirmed, cancelled, completed)
+  - `date`: Filtro por data específica
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "bookings": [
+      {
+        "id": 15,
+        "userId": 1,
+        "roomId": 1,
+        "roomName": "R01",
+        "date": "2025-01-20",
+        "startTime": "14:00",
+        "endTime": "16:00",
+        "purpose": "Reunião de projeto",
+        "attendees": 8,
+        "status": "confirmed"
+      }
+    ]
+  }
+  ```
 
-- **`GET /api/bookings/check-availability`**  
-  Verifica disponibilidade (`room_id`, `date`, `start`, `end`).  
-  **Argumentação:** Evita conflitos.
+**`GET /api/bookings/check-availability`** 🔒
+- **Funcionalidade**: Verifica disponibilidade de sala (evita conflitos)
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros de Query** (obrigatórios):
+  - `roomId`: ID da sala
+  - `date`: Data no formato YYYY-MM-DD
+  - `startTime`: Horário de início (HH:MM)
+  - `endTime`: Horário de término (HH:MM)
+- **Exemplo**: `/api/bookings/check-availability?roomId=1&date=2025-01-20&startTime=14:00&endTime=16:00`
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "available": true,
+    "message": "Sala disponível no horário solicitado"
+  }
+  ```
 
-- **`GET /api/bookings/user/:user_id`**  
-  Reservas de um usuário.  
-  **Argumentação:** Consulta personalizada.
+**`GET /api/bookings/user/:user_id`** 🔒
+- **Funcionalidade**: Lista reservas de um usuário específico
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `user_id` (integer) - ID do usuário
 
-- **`GET /api/bookings/room/:room_id`**  
-  Reservas de uma sala.  
-  **Argumentação:** Visualização de ocupação.
+**`GET /api/bookings/room/:room_id`** 🔒
+- **Funcionalidade**: Lista reservas de uma sala específica (visualização de ocupação)
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `room_id` (integer) - ID da sala
 
-- **`GET /api/bookings/date/:date`**  
-  Reservas por data (`YYYY-MM-DD`).  
-  **Argumentação:** Agenda diária.
+**`GET /api/bookings/date/:date`** 🔒
+- **Funcionalidade**: Lista reservas de uma data específica (agenda diária)
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `date` (string) - Data no formato YYYY-MM-DD
 
-- **`GET /api/bookings/:id`**  
-  Detalhes de uma reserva.  
-  **Argumentação:** Consulta específica.
+**`GET /api/bookings/:id`** 🔒
+- **Funcionalidade**: Detalhes de uma reserva específica
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `id` (integer) - ID da reserva
 
-- **`PUT /api/bookings/:id`**  
-  Atualização de reserva.  
-  **Argumentação:** Modificações pós-criação.
+**`PUT /api/bookings/:id`** 🔒
+- **Funcionalidade**: Atualização de reserva (modificações pós-criação)
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `id` (integer) - ID da reserva
+- **Validações**: Revalidação de disponibilidade e conflitos
 
-- **`PATCH /api/bookings/:id/status`**  
-  Atualiza o status da reserva.  
-  **Argumentação:** Confirmação ou cancelamento.
+**`PATCH /api/bookings/:id/status`** 🔒
+- **Funcionalidade**: Atualização do status da reserva
+- **Headers**: `Authorization: Bearer <token>`
+- **Corpo da Requisição**:
+  ```json
+  {
+    "status": "cancelled"
+  }
+  ```
 
-- **`DELETE /api/bookings/:id`**  
-  Remove uma reserva.  
-  **Argumentação:** Cancelamento definitivo.
+**`DELETE /api/bookings/:id`** 🔒
+- **Funcionalidade**: Cancelamento definitivo de reserva
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `id` (integer) - ID da reserva
+- **Comportamento**: Move automaticamente para histórico
 
 ---
 
-**Conclusão sobre a WebAPI**
+#### Endpoints de Histórico (`/api/history`)
 
-A API RESTful desenvolvida fornece um conjunto abrangente e estruturado de endpoints para suportar todas as funcionalidades previstas para o sistema de Reserva de Salas. A separação por recursos, o uso de métodos HTTP padrão e a implementação de autenticação JWT contribuem para uma API robusta, segura e de fácil utilização, tanto pelo frontend da aplicação quanto por potenciais integrações futuras.
+**Implementação**: `routes/bookingHistoryRoutes.js` + `controllers/BookingHistoryController.js`
+
+**`GET /api/history`** 🔒👑
+- **Funcionalidade**: Lista todo o histórico de reservas (apenas administradores)
+- **Headers**: `Authorization: Bearer <admin_token>`
+- **Resposta de Sucesso** (200):
+  ```json
+  {
+    "success": true,
+    "history": [
+      {
+        "id": 1,
+        "originalBookingId": 15,
+        "userId": 1,
+        "userName": "João Silva",
+        "roomId": 1,
+        "roomName": "R01",
+        "date": "2025-01-15",
+        "startTime": "14:00",
+        "endTime": "16:00",
+        "purpose": "Reunião de projeto",
+        "status": "completed",
+        "expiredAt": "2025-01-15T16:00:00.000Z",
+        "movedToHistoryAt": "2025-01-15T16:05:00.000Z"
+      }
+    ]
+  }
+  ```
+
+**`GET /api/history/:id`** 🔒
+- **Funcionalidade**: Detalhes de uma entrada específica do histórico
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `id` (integer) - ID da entrada do histórico
+
+**`GET /api/history/booking/:booking_id`** 🔒
+- **Funcionalidade**: Histórico de uma reserva específica
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `booking_id` (integer) - ID da reserva original
+
+**`GET /api/history/user/:user_id`** 🔒
+- **Funcionalidade**: Histórico de reservas de um usuário específico
+- **Headers**: `Authorization: Bearer <token>`
+- **Parâmetros**: `user_id` (integer) - ID do usuário
+
+---
+
+#### Funcionalidades Especiais Implementadas
+
+**Sistema de Expiração Automática**
+- **Endpoint**: Processamento automático em background
+- **Funcionalidade**: Move reservas expiradas para histórico automaticamente
+- **Frequência**: Verificação a cada 5 minutos
+- **Fuso Horário**: America/Sao_Paulo (Brasília)
+
+**Endpoints Administrativos Especiais**
+- `POST /api/bookings/process-expired` 🔒👑: Processamento manual de expiração
+- `GET /api/bookings/expiration-stats` 🔒👑: Estatísticas de expiração
+- `GET /api/bookings/:id/check-expiration` 🔒: Verificação de expiração específica
+
+---
+
+**Legenda de Símbolos:**
+- 🌐 **Público**: Acesso sem autenticação
+- 🔒 **Autenticado**: Requer token JWT válido
+- 👑 **Admin**: Requer token JWT de administrador
+
+**Conclusão sobre a WebAPI Implementada**
+
+A API RESTful implementada fornece um conjunto completo e funcional de 25+ endpoints para suportar todas as funcionalidades do Sistema de Reservas INTELI. A implementação inclui:
+
+✅ **Segurança Robusta**: Autenticação JWT e autorização baseada em roles
+✅ **Validações Completas**: Verificação de dados, conflitos e regras de negócio
+✅ **Funcionalidades Avançadas**: Sistema de expiração automática único
+✅ **Organização Modular**: Separação clara por recursos e responsabilidades
+✅ **Documentação Completa**: Todos os endpoints testados e documentados
+✅ **Tratamento de Erros**: Respostas consistentes e informativas
+✅ **Escalabilidade**: Preparado para futuras expansões e integrações
+
+A API serve tanto o frontend EJS quanto permite integrações futuras, mantendo alta performance e confiabilidade.
 
 
 ## 3.6.3 Configuração do Banco de Dados 
@@ -1150,13 +1968,15 @@ A validação funcional dos endpoints da API pode ser realizada por meio dos seg
 
 Para uma validação completa, recomenda-se a combinação de testes manuais da API (utilizando `rest.http`) e testes funcionais através da interface web.
 
-### 3.7 Interface e Navegação
+### 3.7 Interface e Navegação (Semana 07)
 
 ## Desenvolvimento do Frontend do Sistema Web
 
 ### Visão Geral
 
 Esta seção descreve o desenvolvimento do frontend do Sistema de Reservas INTELI, uma aplicação web completa desenvolvida para gerenciar reservas de salas do instituto. O frontend foi construído utilizando tecnologias modernas e seguindo o Design System oficial do INTELI, garantindo uma experiência de usuário consistente e profissional.
+
+**Integração com a WebAPI**: O frontend implementado consome todos os endpoints documentados na seção 3.6, utilizando JavaScript moderno (Fetch API) para comunicação assíncrona com a API RESTful. A interface fornece feedback visual em tempo real para todas as operações, desde autenticação até gerenciamento de reservas.
 
 ### Tecnologias Utilizadas
 

@@ -1,0 +1,742 @@
+/* 🎨 Guia de Estilos – Sistema de Reservas de Salas do INTELI */
+/* Implementação completa do Design System oficial INTELI */
+
+/* ===== VARIÁVEIS CSS ===== */
+:root {
+  /* Cores Primárias INTELI */
+  --inteli-roxo: #2e2640;        /* Fundo principal, cabeçalho e rodapé */
+  --inteli-coral: #ff4545;       /* Botões principais, ações e destaques */
+  --inteli-lilas: #855ede;       /* Ícones e elementos gráficos de apoio */
+  --inteli-azul: #1426ab;        /* Botões alternativos, cabeçalhos internos */
+  --inteli-cinza: #cccfd1;       /* Bordas e fundos secundários */
+
+  /* Cores Secundárias INTELI */
+  --inteli-laranja: #ff8245;     /* Alertas ou destaques secundários */
+  --inteli-cinza-escuro: #878a96; /* Texto secundário, descrições, placeholders */
+  --inteli-violeta: #4a17ab;     /* Elementos gráficos ou fundos auxiliares */
+  --inteli-azul-royal: #124aed;  /* Ícones e destaques gráficos */
+
+  /* Cores Neutras e Funcionais */
+  --inteli-branco: #FFFFFF;      /* Fundos e textos sobre escuro */
+  --inteli-preto: #000000;       /* Textos sobre fundos claros */
+  --inteli-verde: #28a745;       /* Status positivo (Disponível, Confirmada) */
+  --inteli-vermelho: #dc3545;    /* Status negativo (Ocupada, Cancelar) */
+  --inteli-azul-claro: #e3f2fd;  /* Fundo de dicas ou regras */
+
+  /* Tipografia INTELI */
+  --font-primary: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-secondary: 'Space Mono', 'Courier New', monospace;
+  
+  /* Tamanhos de Fonte */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  
+  /* Espaçamentos */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;    /* 4px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== IMPORTAÇÃO DE FONTES INTELI ===== */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+/* ===== RESET E BASE ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--inteli-preto);
+  background-color: var(--inteli-branco);
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== 🔤 TIPOGRAFIA INTELI ===== */
+/* Space Mono Bold: títulos, chamadas e elementos de ênfase. Transmite modernidade e tecnologia. */
+/* Manrope Normal: textos corridos, labels, menus, botões. Alta legibilidade. */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-secondary); /* Space Mono Bold */
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: var(--spacing-md);
+  color: var(--inteli-roxo);
+}
+
+/* Títulos, chamadas e elementos de ênfase - Space Mono Bold */
+.inteli-title {
+  font-family: var(--font-secondary);
+  font-weight: 700;
+}
+
+/* Textos corridos, labels, menus, botões - Manrope Normal */
+.inteli-text {
+  font-family: var(--font-primary);
+  font-weight: 400;
+}
+
+/* Hierarquia visual clara com variação de tamanho e peso das fontes */
+
+h1 { font-size: var(--font-size-4xl); }
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
+
+p {
+  margin-bottom: var(--spacing-md);
+  color: var(--inteli-gray-700);
+}
+
+/* ===== HEADER INTELI ===== */
+.inteli-header {
+  background: var(--inteli-roxo);
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  /* Padrão sutil de pontos conforme manual da marca */
+  background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.inteli-navbar {
+  padding: var(--spacing-md) 0;
+}
+
+.inteli-navbar .navbar-brand {
+  font-family: var(--font-secondary);
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+  color: var(--inteli-branco) !important;
+  text-decoration: none;
+}
+
+.inteli-navbar .navbar-brand:hover {
+  color: var(--inteli-coral) !important;
+}
+
+.inteli-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+.inteli-navbar .nav-link:hover {
+  color: white !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.inteli-navbar .dropdown-menu {
+  border: none;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm);
+}
+
+.inteli-navbar .dropdown-item {
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all 0.2s ease;
+}
+
+.inteli-navbar .dropdown-item:hover {
+  background-color: var(--inteli-blue-lighter);
+  color: var(--inteli-blue-primary);
+}
+
+/* ===== 🔘 BOTÕES INTELI ===== */
+/* Estados visuais (normal, hover, pressionado, desabilitado) definidos e aplicados */
+
+/* Primários: Fundo Coral ou Azul Inteli, texto branco, com ícone (ex: "Reservar Agora") */
+.btn-inteli-primary {
+  background: var(--inteli-coral);
+  border: none;
+  color: var(--inteli-branco);
+  font-family: var(--font-primary); /* Manrope Normal */
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.btn-inteli-primary:hover {
+  background: var(--inteli-azul);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  color: var(--inteli-branco);
+}
+
+.btn-inteli-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-inteli-primary:disabled {
+  background: var(--inteli-cinza);
+  color: var(--inteli-cinza-escuro);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Secundários: Fundo branco, borda e texto coloridos (geralmente Coral ou Cinza Escuro). Ex: "Cancelar" */
+.btn-inteli-secondary {
+  background: var(--inteli-branco);
+  border: 2px solid var(--inteli-coral);
+  color: var(--inteli-coral);
+  font-family: var(--font-primary); /* Manrope Normal */
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.btn-inteli-secondary:hover {
+  background: var(--inteli-coral);
+  color: var(--inteli-branco);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-inteli-secondary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-inteli-secondary:disabled {
+  background: var(--inteli-branco);
+  border-color: var(--inteli-cinza);
+  color: var(--inteli-cinza-escuro);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Terciários/Links: Texto simples (Azul Inteli ou Lilás), com possível sublinhado em hover (ex: "Esqueci minha senha") */
+.btn-inteli-outline {
+  background: transparent;
+  border: none;
+  color: var(--inteli-azul);
+  font-family: var(--font-primary); /* Manrope Normal */
+  font-weight: 400;
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.btn-inteli-outline:hover {
+  color: var(--inteli-lilas);
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+.btn-inteli-outline:active {
+  transform: translateY(0);
+}
+
+/* Botão alternativo com Azul Inteli */
+.btn-inteli-blue {
+  background: var(--inteli-azul);
+  border: none;
+  color: var(--inteli-branco);
+  font-family: var(--font-primary);
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.btn-inteli-blue:hover {
+  background: var(--inteli-lilas);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  color: var(--inteli-branco);
+}
+
+/* ===== 🧩 CARDS INTELI ===== */
+/* 📐 Layout Geral: Design limpo com bom uso de espaço em branco */
+/* Cards com cantos arredondados e sombras sutis para agrupar informações */
+/* Margens e espaçamentos consistentes para ritmo visual equilibrado */
+
+.inteli-card {
+  background: var(--inteli-branco);
+  border: 1px solid var(--inteli-cinza);
+  border-radius: var(--radius-xl); /* Cantos mais arredondados conforme guia */
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg); /* Espaçamento consistente */
+}
+
+.inteli-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--inteli-lilas);
+}
+
+.inteli-card-header {
+  background: var(--inteli-azul);
+  color: var(--inteli-branco);
+  padding: var(--spacing-lg);
+  border: none;
+  font-family: var(--font-secondary); /* Space Mono Bold para títulos */
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.inteli-card-body {
+  padding: var(--spacing-lg);
+  font-family: var(--font-primary); /* Manrope Normal para textos */
+}
+
+/* Card com header roxo para destaque principal */
+.inteli-card-primary .inteli-card-header {
+  background: var(--inteli-roxo);
+}
+
+/* Card com header coral para ações e destaques */
+.inteli-card-action .inteli-card-header {
+  background: var(--inteli-coral);
+}
+
+/* Card com header lilás para elementos gráficos */
+.inteli-card-graphic .inteli-card-header {
+  background: var(--inteli-lilas);
+}
+
+/* Card com espaçamento otimizado */
+.inteli-card-compact .inteli-card-body {
+  padding: var(--spacing-md);
+}
+
+/* Card com sombra mais pronunciada para destaque */
+.inteli-card-elevated {
+  box-shadow: var(--shadow-lg);
+}
+
+.inteli-card-elevated:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+/* ===== FORMULÁRIOS INTELI ===== */
+.inteli-form-control {
+  border: 2px solid var(--inteli-cinza);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  transition: all 0.3s ease;
+  background-color: var(--inteli-branco);
+  color: var(--inteli-preto);
+}
+
+.inteli-form-control:focus {
+  border-color: var(--inteli-coral);
+  box-shadow: 0 0 0 3px rgba(255, 69, 69, 0.1);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.inteli-form-control::placeholder {
+  color: var(--inteli-cinza-escuro);
+  font-style: italic;
+}
+
+.inteli-form-label {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  color: var(--inteli-roxo);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Labels com ícones */
+.inteli-form-label i {
+  color: var(--inteli-lilas);
+  margin-right: var(--spacing-xs);
+}
+
+/* ===== ALERTAS INTELI ===== */
+.inteli-alert {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-primary);
+}
+
+/* Status Positivo - Verde */
+.inteli-alert-success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--inteli-verde);
+  border-left: 4px solid var(--inteli-verde);
+}
+
+/* Status Negativo - Vermelho */
+.inteli-alert-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--inteli-vermelho);
+  border-left: 4px solid var(--inteli-vermelho);
+}
+
+/* Alertas Secundários - Laranja INTELI */
+.inteli-alert-warning {
+  background-color: rgba(255, 130, 69, 0.1);
+  color: var(--inteli-laranja);
+  border-left: 4px solid var(--inteli-laranja);
+}
+
+/* Fundo de dicas ou regras - Azul Claro */
+.inteli-alert-info {
+  background-color: var(--inteli-azul-claro);
+  color: var(--inteli-azul);
+  border-left: 4px solid var(--inteli-azul);
+}
+
+/* Ícones nos alertas */
+.inteli-alert i {
+  margin-right: var(--spacing-sm);
+}
+
+/* ===== 🧩 ASSETS VISUAIS INTELI ===== */
+/* Logotipo INTELI: Presente em cabeçalhos e telas de login, com respeito ao manual da marca */
+.inteli-logo {
+  max-height: 40px;
+  width: auto;
+  transition: all 0.3s ease;
+}
+
+.inteli-logo:hover {
+  transform: scale(1.05);
+}
+
+/* Ícones: Estilo limpo e moderno (semelhantes ao Font Awesome/Material Icons) */
+/* Usados para ações, status e funcionalidades */
+.inteli-icon {
+  color: var(--inteli-lilas);
+  transition: all 0.3s ease;
+}
+
+.inteli-icon:hover {
+  color: var(--inteli-coral);
+  transform: scale(1.1);
+}
+
+/* Grafismos: Padrões sutis de pontos aplicados sobre fundos escuros, conforme o manual da marca */
+.inteli-gradient-bg {
+  background: var(--inteli-roxo);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Padrão de pontos para fundos alternativos */
+.inteli-dots-pattern {
+  background-image: radial-gradient(circle, rgba(133, 94, 222, 0.1) 1px, transparent 1px);
+  background-size: 15px 15px;
+}
+
+/* ===== UTILITÁRIOS INTELI ===== */
+
+/* Classes de texto com cores INTELI */
+.inteli-text-roxo { color: var(--inteli-roxo) !important; }
+.inteli-text-coral { color: var(--inteli-coral) !important; }
+.inteli-text-lilas { color: var(--inteli-lilas) !important; }
+.inteli-text-azul { color: var(--inteli-azul) !important; }
+.inteli-text-laranja { color: var(--inteli-laranja) !important; }
+.inteli-text-azul-royal { color: var(--inteli-azul-royal) !important; }
+.inteli-text-cinza { color: var(--inteli-cinza-escuro) !important; }
+
+/* Classes de background */
+.inteli-bg-roxo { background-color: var(--inteli-roxo) !important; }
+.inteli-bg-coral { background-color: var(--inteli-coral) !important; }
+.inteli-bg-lilas { background-color: var(--inteli-lilas) !important; }
+.inteli-bg-azul { background-color: var(--inteli-azul) !important; }
+.inteli-bg-light { background-color: var(--inteli-cinza) !important; }
+.inteli-bg-white { background-color: var(--inteli-branco) !important; }
+
+/* ===== STATUS E ESTADOS VISUAIS ===== */
+/* Verde (#28a745): status positivo (Disponível, Confirmada) */
+/* Vermelho (#dc3545): status negativo (Ocupada, Cancelar) */
+
+.status-disponivel {
+  color: var(--inteli-verde) !important;
+  font-weight: 600;
+  font-family: var(--font-primary);
+}
+
+.status-ocupada {
+  color: var(--inteli-vermelho) !important;
+  font-weight: 600;
+  font-family: var(--font-primary);
+}
+
+.status-confirmada {
+  color: var(--inteli-verde) !important;
+  font-weight: 600;
+  font-family: var(--font-primary);
+}
+
+.status-cancelada {
+  color: var(--inteli-vermelho) !important;
+  font-weight: 600;
+  font-family: var(--font-primary);
+}
+
+.status-pendente {
+  color: var(--inteli-laranja) !important;
+  font-weight: 600;
+  font-family: var(--font-primary);
+}
+
+/* Badges de status */
+.badge-status {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-weight: 500;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-disponivel {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--inteli-verde);
+  border: 1px solid var(--inteli-verde);
+}
+
+.badge-ocupada {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--inteli-vermelho);
+  border: 1px solid var(--inteli-vermelho);
+}
+
+.badge-confirmada {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--inteli-verde);
+  border: 1px solid var(--inteli-verde);
+}
+
+/* ===== HERO SECTION ===== */
+.min-vh-50 {
+  min-height: 50vh;
+}
+
+.hero-illustration {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+/* ===== FEATURE ICONS ===== */
+.feature-icon {
+  transition: all 0.3s ease;
+}
+
+.inteli-card:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+/* ===== STATS SECTION ===== */
+.stat-item {
+  padding: var(--spacing-lg);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+}
+
+.stat-item h3 {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ===== LOADING ANIMATIONS ===== */
+.btn .spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ===== FORM ENHANCEMENTS ===== */
+.inteli-form-control:focus {
+  transform: translateY(-1px);
+}
+
+.form-check-input:checked {
+  background-color: var(--inteli-blue-primary);
+  border-color: var(--inteli-blue-primary);
+}
+
+/* ===== NAVBAR ENHANCEMENTS ===== */
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* ===== FOOTER ENHANCEMENTS ===== */
+footer a:hover {
+  color: white !important;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* ===== SCROLL ANIMATIONS ===== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== CUSTOM SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--inteli-gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--inteli-blue-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--inteli-blue-dark);
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .inteli-navbar .navbar-brand {
+    font-size: var(--font-size-lg);
+  }
+
+  .inteli-navbar .navbar-brand span {
+    display: block;
+    font-size: var(--font-size-base);
+  }
+
+  h1 { font-size: var(--font-size-3xl); }
+  h2 { font-size: var(--font-size-2xl); }
+  h3 { font-size: var(--font-size-xl); }
+
+  .inteli-card-body {
+    padding: var(--spacing-md);
+  }
+
+  .hero-illustration {
+    margin-top: var(--spacing-xl);
+  }
+
+  .hero-illustration i {
+    font-size: 6rem !important;
+  }
+
+  .stat-item h3 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .btn-lg {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+
+  .inteli-card-header,
+  .inteli-card-body {
+    padding: var(--spacing-md);
+  }
+
+  .btn-lg {
+    width: 100%;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .d-flex.gap-3 {
+    flex-direction: column;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .inteli-header,
+  footer,
+  .btn {
+    display: none !important;
+  }
+
+  .inteli-card {
+    box-shadow: none !important;
+    border: 1px solid var(--inteli-gray-300) !important;
+  }
+}

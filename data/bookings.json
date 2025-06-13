@@ -1,0 +1,80 @@
+[
+  {
+    "id": 1,
+    "roomId": 1,
+    "userId": 1,
+    "date": "2025-05-24",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "purpose": "Teste de API",
+    "attendees": 2,
+    "status": "cancelled",
+    "createdAt": "2025-05-23T17:43:40.997Z",
+    "updatedAt": "2025-05-23T17:43:41.009Z"
+  },
+  {
+    "id": 2,
+    "roomId": 2,
+    "userId": 2,
+    "date": "2025-05-24",
+    "startTime": "16:58",
+    "endTime": "18:00",
+    "purpose": "Projeto",
+    "attendees": 2,
+    "status": "cancelled",
+    "createdAt": "2025-05-23T18:57:13.738Z",
+    "updatedAt": "2025-05-23T19:03:00.730Z"
+  },
+  {
+    "id": 3,
+    "roomId": 6,
+    "userId": 2,
+    "date": "2025-05-28",
+    "startTime": "16:08",
+    "endTime": "22:02",
+    "purpose": "Projeto",
+    "attendees": 2,
+    "status": "cancelled",
+    "createdAt": "2025-05-23T19:02:54.177Z",
+    "updatedAt": "2025-05-23T19:02:58.997Z"
+  },
+  {
+    "id": 4,
+    "roomId": 5,
+    "userId": 3,
+    "date": "2025-05-28",
+    "startTime": "17:01",
+    "endTime": "21:55",
+    "purpose": "Opa",
+    "attendees": 1,
+    "status": "cancelled",
+    "createdAt": "2025-05-23T20:55:26.069Z",
+    "updatedAt": "2025-05-23T20:56:18.056Z"
+  },
+  {
+    "id": 5,
+    "roomId": 1,
+    "userId": 2,
+    "date": "2025-05-26",
+    "startTime": "12:00",
+    "endTime": "13:00",
+    "purpose": "Projeto",
+    "attendees": 1,
+    "status": "cancelled",
+    "createdAt": "2025-05-24T19:22:28.711Z",
+    "updatedAt": "2025-05-24T19:25:32.119Z"
+  },
+  {
+    "id": 6,
+    "roomId": 3,
+    "userId": 4,
+    "date": "2025-06-10",
+    "startTime": "20:04",
+    "endTime": "21:04",
+    "purpose": "Projeto",
+    "attendees": 2,
+    "status": "cancelled",
+    "createdAt": "2025-06-10T21:04:49.157Z",
+    "updatedAt": "2025-06-10T21:04:55.216Z"
+  }
+]

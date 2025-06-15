@@ -76,5 +76,18 @@
     "status": "cancelled",
     "createdAt": "2025-06-10T21:04:49.157Z",
     "updatedAt": "2025-06-10T21:04:55.216Z"
+  },
+  {
+    "id": 7,
+    "roomId": 1,
+    "userId": 7,
+    "date": "2025-06-15",
+    "startTime": "19:04",
+    "endTime": "20:04",
+    "purpose": "Projeto",
+    "attendees": 3,
+    "status": "confirmed",
+    "createdAt": "2025-06-15T19:13:18.685Z",
+    "updatedAt": "2025-06-15T19:13:18.685Z"
   }
 ]

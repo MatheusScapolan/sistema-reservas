@@ -2218,7 +2218,7 @@ O sistema entregue atende completamente aos requisitos funcionais e não-funcion
 
 ### 4.1 Demonstração do Sistema Web
 
-**VIDEO: [Link do vídeo demonstrativo será inserido aqui]**
+**VIDEO: https://www.youtube.com/watch?v=jwuTUKiVdqY**
 
 O Sistema de Reservas INTELI foi desenvolvido como uma aplicação web completa, implementando todas as funcionalidades planejadas e seguindo as melhores práticas de desenvolvimento. O sistema entregue representa uma solução robusta e escalável para o gerenciamento de reservas de salas no ambiente acadêmico do INTELI.
 
